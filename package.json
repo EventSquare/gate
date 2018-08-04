@@ -1,5 +1,5 @@
 {
-    "name": "@eventsquare/gate",
+    "name": "eventsquare/gate",
     "version": "0.0.2",
     "description": "Event support access control server.",
     "main": "gate.js",
