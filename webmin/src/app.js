@@ -79,7 +79,7 @@ var app = new Vue({
 var statsInterval = setInterval(function(){
     app.fetchStats();
     app.fetchCounts();
-},10000);
+},60000);
 
 app.fetchStats();
 app.fetchCounts();
