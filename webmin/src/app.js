@@ -17,7 +17,21 @@ esq.on('disconnect', function () {
     console.log('Disconnected');
 })
 
+//Routes
+const Dashboard = { template: '<div>Dashboard</div>' }
+const Reports = { template: '<div>Reports</div>' }
+
+const routes = [
+    { path: '/', component: Dashboard },
+    { path: '/reports', component: Reports }
+]
+
+const router = new VueRouter({
+    routes // short for `routes: routes`
+})
+
 var app = new Vue({
+    router: router,
     el: '#app',
     data: {
         stats: null,
