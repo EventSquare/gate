@@ -49,7 +49,7 @@
       </div>
       <div class="row">
           <div class="col-sm">
-              <div class="text-center bg-primary mb-3" style="color: #FFFFFF; font-size: 30px; border-radius: 5px; padding: 20px;">Outside <b>{{ counts.total_delta }}</b></div>
+              <div class="text-center bg-primary mb-3" style="color: #FFFFFF; font-size: 30px; border-radius: 5px; padding: 20px;">{{ counts.total_delta > 0 ? 'Re-entry' : 'Outside' }} <b>{{ Math.abs(counts.total_delta) }}</b></div>
           </div>
           <div class="col-sm">
               <div class="text-center bg-primary mb-3" style="color: #FFFFFF; font-size: 30px; border-radius: 5px; padding: 20px;">Not scanned <b>{{ totalTickets.remaining }}</b></div>
@@ -94,17 +94,17 @@
                 </thead>
                 <tbody>
                   <tr>
-                    <td><b>RE-ENTRY</b></td>
+                    <td><b>IN</b></td>
                     <td>{{ counts.total_in }}</td>
                   </tr>
                   <tr>
-                      <td><b>OUTSIDE</b></td>
+                      <td><b>OUT</b></td>
                       <td>{{ counts.total_out }}</td>
                   </tr>
-                  <tr>
+                  <!-- <tr>
                       <td><b>DELTA</b></td>
                       <td>{{ counts.total_delta }}</td>
-                  </tr>
+                  </tr> -->
                 </tbody>
             </table>
 
