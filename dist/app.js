@@ -7819,9 +7819,31 @@ var app = new Vue({
     el: '#app',
     data: {
         stats: null,
-        counts: null
+        counts: null,
+        activeTypes: []
     },
     computed: {
+        totalTickets: function(){
+            var total = {
+                scans: 0,
+                tickets: 0,
+                remaining: 0
+            };
+            if(!this.stats) return total;
+            
+            var filter = false;
+            if(this.activeTypes.length > 0) filter = true;
+            for(i=0;i<this.stats.types.length;i++){
+                if(filter && !this.isTypeActive(this.stats.types[i].id)){
+                    
+                } else {
+                    total.scans +=  this.stats.types[i].tickets_scanned;
+                    total.tickets +=  this.stats.types[i].tickets_total;
+                    total.remaining +=  (this.stats.types[i].tickets_total - this.stats.types[i].tickets_scanned);
+                }
+            }
+            return total;
+        },
         totalCrowd: function(){
             if(!this.stats) return 0;
             if(!this.counts) return 0;
@@ -7829,6 +7851,19 @@ var app = new Vue({
         }
     },
     methods: {
+        toggleType: function(type_id) {
+            var index = this.activeTypes.indexOf(type_id);
+            if(index == -1){
+                this.activeTypes.push(type_id);
+            } else {
+                var activeTypes = this.activeTypes;
+                activeTypes.splice(index, 1);
+                this.activeTypes = activeTypes;
+            }
+        },
+        isTypeActive(type_id){
+            return this.activeTypes.indexOf(type_id) !== -1;
+        },
         fetchStats: function () {
             axios.get('/api/stats')
             .then(function (response) {
