@@ -13,12 +13,22 @@
         "moment-timezone": "^0.5.21",
         "realm": "^2.14.0",
         "socket.io": "^2.1.1",
-        "uuidv4": "^1.0.1"
+        "uuidv4": "^1.0.1",
+        "vue": "^2.5.17",
+        "vue-router": "^3.0.1"
     },
     "homepage": "https://www.eventsquare.co",
-    "devDependencies": {},
+    "devDependencies": {
+        "css-loader": "^1.0.0",
+        "style-loader": "^0.21.0",
+        "vue-loader": "^15.3.0",
+        "vue-style-loader": "^4.1.1",
+        "vue-template-compiler": "^2.5.17",
+        "webpack": "^4.16.4",
+        "webpack-cli": "^3.1.0"
+    },
     "scripts": {
         "test": "node ./test/test.js",
-        "build": "browserify ./webmin/src/app.js > ./dist/app.js"
+        "watch": "webpack --watch --config webpack.config.js"
     }
 }
