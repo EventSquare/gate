@@ -1,19 +1,54 @@
-import Vue from 'vue'
-import App from './App.vue'
+import React from "react";
+import ReactDOM from "react-dom";
+import { BrowserRouter as Router, Route, Link } from "react-router-dom";
 
-// const routes = [
-//     { path: '/', component: require('./pages/dashboard.vue')},
-//     { path: '/reports', component: require('./pages/reports.vue') }
-// ]
+import './sass/app.scss';
+import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
 
-// const router = new VueRouter({
-//     routes: routes,
-//     mode: 'history'
-// })
+var Client = require('./../lib/client.js')
 
-//router: router,
+//Components
+const NavBar = require('./components/navbar')
 
-var app = new Vue({
-    el: '#app',
-    render: h => h(App)
-})
+//Pages
+const Dashboard = require('./views/dashboard');
+const Reports = require('./views/reports');
+const Settings = require('./views/settings');
+
+const Order = require('./views/order');
+
+//Socket client
+var esq = new Client({
+    name: 'Macbook Pro van Willem',
+    encryption_key: 'XXXXXX'
+});
+
+class App extends React.Component {
+    componentDidMount() {
+        this.initSocket()
+    }
+    initSocket(){
+        esq.open('http://localhost:3000');
+        esq.on('connect', function () {
+            console.log('Connected');
+        })
+        esq.on('disconnect', function () {
+            console.log('Disconnected');
+        })
+    }
+    render() {
+        return (
+            <Router>
+                <div style={{height: '100%'}}>
+                    <NavBar />
+                    <Route exact path="/" component={Dashboard} />
+                    <Route path="/reports" component={Reports} />
+                    <Route path="/settings" component={Settings} />
+                    <Route path="/orders/:id" component={Order} />
+                </div>
+            </Router>
+        )
+    }
+};
+
+ReactDOM.render(<App />, document.getElementById("app"));
