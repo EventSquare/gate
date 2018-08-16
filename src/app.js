@@ -12,10 +12,13 @@ const NavBar = require('./components/navbar')
 
 //Pages
 const Dashboard = require('./views/dashboard');
+const Order = require('./views/order');
+
+const Shows = require('./views/shows');
+const Show = require('./views/show');
+
 const Reports = require('./views/reports');
 const Settings = require('./views/settings');
-
-const Order = require('./views/order');
 
 //Socket client
 var esq = new Client({
@@ -42,9 +45,11 @@ class App extends React.Component {
                 <div style={{height: '100%'}}>
                     <NavBar />
                     <Route exact path="/" component={Dashboard} />
-                    <Route path="/reports" component={Reports} />
-                    <Route path="/settings" component={Settings} />
                     <Route path="/orders/:id" component={Order} />
+                    <Route exact path="/shows" component={Shows} />
+                    <Route path="/shows/:id" component={Show} />
+                    <Route exact path="/reports" component={Reports} />
+                    <Route exact path="/settings" component={Settings} />
                 </div>
             </Router>
         )

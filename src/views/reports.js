@@ -55,9 +55,9 @@ class Reports extends React.Component {
     }
     render() {
         return (
+            <div className="page-padding">
                 <div className="container">
-
-                    <h1 className="mt-5">Reports</h1>
+                    <h1>Reports</h1>
 
                     <div>{ JSON.stringify(this.state.stats) }</div>
 
@@ -129,6 +129,7 @@ class Reports extends React.Component {
                         </div>
                     </div> */}
                 </div>
+            </div>
         )
     }
 };
