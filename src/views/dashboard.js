@@ -75,6 +75,9 @@ class DashBoard extends React.Component {
     openOrder(order_id){
         this.props.history.push('/orders/'+order_id);
     }
+    openCustomer(customer_id){
+        this.props.history.push('/customers/'+customer_id);
+    }
     ordersList(orders){
         const listItems = orders.map((order) =>
             <tr key={order.id} onClick={() => this.openOrder(order.id)}>
@@ -108,7 +111,7 @@ class DashBoard extends React.Component {
     }
     customersList(customers){
         const listItems = customers.map((customer) =>
-            <tr key={customer.id}>
+            <tr key={customer.id} onClick={() => this.openCustomer(customer.id)}>
                 <td>{ (customer.firstname ? customer.firstname : '') + ' ' + (customer.lastname ? customer.lastname : '') }</td>
                 <td>{ (customer.email ? customer.email : '') }</td>
             </tr>

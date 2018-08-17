@@ -13,6 +13,7 @@ const NavBar = require('./components/navbar')
 //Pages
 const Dashboard = require('./views/dashboard');
 const Order = require('./views/order');
+const Customer = require('./views/customer');
 
 const Shows = require('./views/shows');
 const Show = require('./views/show');
@@ -46,6 +47,7 @@ class App extends React.Component {
                     <NavBar />
                     <Route exact path="/" component={Dashboard} />
                     <Route path="/orders/:id" component={Order} />
+                    <Route path="/customers/:id" component={Customer} />
                     <Route exact path="/shows" component={Shows} />
                     <Route path="/shows/:id" component={Show} />
                     <Route exact path="/reports" component={Reports} />

@@ -1,24 +1,24 @@
 import React from "react";
 const axios = require('axios');
 
-class Order extends React.Component {
+class Customer extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            order: null,
+            customer: null,
             pockets: [],
             pocketData: []
         }
     };
     componentDidMount() {
-        this.loadOrder();
+        this.loadCustomer();
     }
-    loadOrder(){
-        axios.get('/api/orders/' + this.props.match.params.id)
+    loadCustomer(){
+        axios.get('/api/customers/' + this.props.match.params.id)
         .then(function (response) {
             // handle success
             this.setState({
-                order: response.data.order,
+                customer: response.data.customer,
                 pockets: Object.values(response.data.pockets),
                 pocketData: []
             },function(){
@@ -62,42 +62,34 @@ class Order extends React.Component {
             // always executed
         });
     }
-    renderOrder(){
-        if(!this.state.order) return;
+    renderCustomer(){
+        if(!this.state.customer) return;
         return (
             <div className="container">
                 <div className="row">
                     <div className="col-sm mb-3">
-                        <h1>Order #{ this.state.order.reference }</h1>
+                        <h1>{ this.state.customer.firstname ? (this.state.customer.firstname + (this.state.customer.lastname ? ' ' + this.state.customer.lastname : '')) : ('Customer #' + this.state.customer.id) }</h1>
                         <hr/>
                     </div>
                 </div>
-                
                 <div className="row">
                     <div className="col-3">
-                        { this.state.order.firstname &&
-                        <div>
-                            <h3>Details</h3>
-                            <table className="table table-bordered">
-                                <tbody>
-                                    <tr>
-                                        <td>{ this.state.order.firstname + " " + (this.state.order.lastname ? ' ' + this.state.order.lastname : '' )}</td>
-                                    </tr>
-                                    { this.state.order.email &&
-                                    <tr>
-                                        <td>{ this.state.order.email }</td>
-                                    </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                        }
+                        <h3>Details</h3>
+                        <table className="table table-bordered">
+                            <tbody>
+                                <tr>
+                                    <td>{ this.state.customer.firstname + " " + this.state.customer.lastname }</td>
+                                </tr>
+                                <tr>
+                                    <td>{ this.state.customer.email }</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                     <div className="col-9">
                         { this.renderPockets() }
                     </div>
                 </div>
-                
             </div>
         )
     }
@@ -165,10 +157,10 @@ class Order extends React.Component {
     render() {
         return (
             <div className="page-padding">
-                { this.renderOrder() }
+                { this.renderCustomer() }
             </div>
         )
     }
 };
 
-module.exports = Order;
+module.exports = Customer;
