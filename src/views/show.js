@@ -47,8 +47,8 @@ class Show extends React.Component {
                     </div>
                 </td>
                 <td>{type.scans}</td>
-                <td>{type.tickets}</td>
                 <td>{type.tickets - type.scans}</td>
+                <td>{type.tickets}</td>
             </tr>
         );
     }
