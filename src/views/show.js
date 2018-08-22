@@ -48,6 +48,7 @@ class Show extends React.Component {
                 </td>
                 <td>{type.scans}</td>
                 <td>{type.tickets}</td>
+                <td>{type.tickets - type.scans}</td>
             </tr>
         );
     }
@@ -66,6 +67,7 @@ class Show extends React.Component {
                             <tr>
                                 <th scope="col">Type</th>
                                 <th scope="col">Scans</th>
+                                <th scope="col">Remaining</th>
                                 <th scope="col">Total</th>
                             </tr>
                         </thead>
