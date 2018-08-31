@@ -1,7 +1,9 @@
 var Client = require('./lib/client.js');
-var Server = require('./lib/server.js');
+var Gate = require('./lib/gate.js');
+var Discover = require('./lib/discover.js');
 
 module.exports = {
     Client : Client,
-    Server : Server
+    Gate : Gate,
+    discover: Discover
 }
