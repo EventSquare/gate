@@ -1,8 +1,9 @@
 const express = require('express')
 const path = require("path")
-const DB = require('./db')
-var moment = require('moment-timezone');
+const moment = require('moment-timezone');
 const uuidv4 = require('uuid/v4');
+
+const DB = require('../lib/db')
 
 class Router {
     constructor(app,config,sync){

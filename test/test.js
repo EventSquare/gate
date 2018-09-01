@@ -18,7 +18,7 @@ gate.start();
 
 //Listen for incoming EID reads
 gate.on('eid_read',event => {
-    //event object contains sourc, event and data.
+    //event object contains source, event and data.
 });
 
 //Client sample code

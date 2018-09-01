@@ -3,20 +3,17 @@ const Crypto = require("crypto");
 
 class Client {
     constructor(newConfig){
-        //Config validation
-        if(typeof newConfig.name == 'undefined' || typeof newConfig.cypher_key == 'undefined'){
-            console.log('Please check name and cypher_key.');
-            return;
-        }
         //Initialize Config
         this.config = {
-            name: null,
             cypher_key: null,
             host: null,
+            name: null,
             port: null
         }
         //Update Configuration
         this.config = Object.assign(this.config, newConfig);
+        //Validate Configuration
+        this.validateConfigOrDie();
         //Initialize constants
         this.socket = null;
         this.connected = false;
@@ -27,6 +24,26 @@ class Client {
         this.handleEventListener = this.handleEventListener.bind(this);
         //Connect
         this.connect();
+    }
+    validateConfigOrDie(){
+        let valid = true;
+        if(!this.config.cypher_key){
+            console.error("The config property 'cypher_key' is required when starting a Client.");
+            valid = false;
+        }
+        if(!this.config.host){
+            console.error("The config property 'host' is required when starting a Client.");
+            valid = false;
+        }
+        if(!this.config.name){
+            console.error("The config property 'name' is required when starting a Client.");
+            valid = false;
+        }
+        if(!this.config.port){
+            console.error("The config property 'port' is required when starting a Client.");
+            valid = false;
+        }
+        if(!valid) process.exit(1);
     }
     connect(){
         this.socket = io("http://"+this.config.host+":"+this.config.port);

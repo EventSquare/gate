@@ -11,7 +11,7 @@ npm i eventsquare-gate
 ## Starting a server
 
 ```js
-const EventSquare = require(eventsquare-gate');
+const EventSquare = require('eventsquare-gate');
 const path = require('path');
 const EventSquare = require('./gate.js');
 
@@ -29,7 +29,7 @@ gate.start();
 
 //Listen for incoming EID reads
 gate.on('eid_read',event => {
-    //event object contains sourc, event and data.
+    //event object contains source, event and data.
 });
 
 ```
@@ -41,7 +41,7 @@ gate.on('eid_read',event => {
 Use the static discover() method to find running EventSquare gates on the network. The example connects with the first one found.
 
 ```js
-const EventSquare = require(eventsquare-gate');
+const EventSquare = require('eventsquare-gate');
 
 let client;
 

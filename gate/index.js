@@ -1,9 +1,9 @@
 const express = require('express');
 const http = require('http');
 
+const Bonjour = require('./bonjour');
 const Router = require('./router');
 const Socket = require('./socket');
-const Bonjour = require('./bonjour');
 const Sync = require('./sync');
 
 class Gate {

@@ -1,11 +1,12 @@
-const DB = require('./db')
 const axios = require('axios');
-var qs = require('qs');
-require('dotenv').config()
-var ip = require('ip');
-var macaddress = require('macaddress');
-var moment = require('moment-timezone');
+const qs = require('qs');
+const ip = require('ip');
+const macaddress = require('macaddress');
+const moment = require('moment-timezone');
 const uuidv4 = require('uuid/v4');
+
+require('dotenv').config()
+const DB = require('../lib/db')
 
 class Sync {
     constructor(config){
