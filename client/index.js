@@ -10,6 +10,7 @@ class Client {
             cypher_key: null,
             host: null,
             name: null,
+            device: 'unknown',
             port: null
         }
         //Update Configuration
@@ -95,9 +96,10 @@ class Client {
         this.connected = true;
         console.log(this.config.name + ' connected to gate');
         this.emit('handshake',{
-            id: this.socket.id,
             name: this.config.name,
-            ip: ip.address()
+            device: this.config.device,
+            ip: ip.address(),
+            socket_id: this.socket.id
         });
         this.handleEventListener('connect');
     }
