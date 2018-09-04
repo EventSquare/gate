@@ -1,5 +1,7 @@
 const io = require('socket.io-client');
 const Crypto = require("crypto");
+const bonjour = require('bonjour');
+const ip = require('ip');
 
 class Client {
     constructor(newConfig){
@@ -50,19 +52,38 @@ class Client {
         this.socket.on('connect', this.onConnect);
         this.socket.on('disconnect', this.onDisconnect);
     }
+    disconnect(){
+        this.socket.disconnect();
+    }
     on(event,callback){
         this.events[event] = callback;
     }
-    emit(event,data){
-        if(!this.connected) {
-            return;
-        }
+    emit(event,data,callback){
+        
         var hash = this.encrypt({
             source: this.config.name,
             event: event,
             data: data
         });
-        this.socket.emit('event',hash);
+
+        let ackTimeout = null;
+
+        this.socket.emit('event',hash,function(err){
+            clearTimeout(ackTimeout);
+            if(typeof callback !== 'undefined'){
+                callback(err);
+            }
+            if(err){
+                console.log('There was a problem emitting the ' + event);
+            }
+        }.bind(this));
+
+        ackTimeout = setTimeout(function(){
+            if(typeof callback !== 'undefined'){
+                callback('emit_timeout');
+            }
+            console.log('There was a problem emitting the ' + event);
+        }.bind(this),2500);
     }
     encrypt(data){
         var key = Crypto.createCipher('aes-128-cbc', this.config.cypher_key);
@@ -73,18 +94,61 @@ class Client {
     onConnect(){
         this.connected = true;
         console.log(this.config.name + ' connected to gate');
+        this.emit('handshake',{
+            id: this.socket.id,
+            name: this.config.name,
+            ip: ip.address()
+        });
         this.handleEventListener('connect');
     }
     onDisconnect(){
-        console.log('disconnected');
         this.connected = false;
-        console.log(this.name + ' disconnected from gate');
+        console.log(this.config.name + ' disconnected from gate');
+        this.handleEventListener('disconnect');
     }
     handleEventListener(event,payload){
         if(typeof this.events[event] !== 'undefined'){
             this.events[event](payload);
         }
     }
+    static discover(timeout = 2000,callback){
+        //Initialize Bonjour listener
+        let bonjourBrowser = bonjour();
+        let gates = [];
+        let browser = bonjourBrowser.find({
+            type: 'EventSquare'
+        },function(service){
+            let gate = formatService(service);
+            if(gate) gates.push(gate);
+        });
+
+        let time = setTimeout(function(){
+            callback(gates);
+            browser.stop();
+        }.bind(this),timeout)
+    }
+}
+
+function formatService(service){
+    //Validate IPV4
+    var ip = findIpv4(service.addresses);
+    if(!ip) return;
+    return {
+        name: service.name,
+        host: ip,
+        port: service.port
+    };
+}
+
+function findIpv4(addresses){
+    let ip = null;
+    for(var i = 0; i < addresses.length; i++){
+        if(addresses[i].length <= 15){
+            ip = addresses[i];
+            break;
+        }
+    }
+    return ip;
 }
 
 module.exports = Client;

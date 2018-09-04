@@ -10,7 +10,7 @@ const gate = new EventSquare.Gate({
     name: 'Gate van Willem',
     port: process.env.PORT,
     scantoken: process.env.SCANTOKEN,
-    storage_path: path.join(__dirname + '/storage'),
+    storage_path: path.join(__dirname + '/../storage'),
     timezone: process.env.TIMEZONE,
 });
 
@@ -19,24 +19,45 @@ gate.start();
 //Listen for incoming EID reads
 gate.on('eid_read',event => {
     //event object contains source, event and data.
+    console.log(event);
+});
+
+gate.on('handshake',event => {
+    //event object contains source, event and data.
+    console.log(event);
 });
 
 //Client sample code
 
-let client;
+// let client;
 
-EventSquare.discover(2500,(gates) => {
+EventSquare.Client.discover(2500,(gates) => {
+
+    //Connect to local gate, should connect to one of the gates returned obviously
     client = new EventSquare.Client({
         name: 'EID1',
         cypher_key: 'XXXXXX',
-        host: gates[0].host,
-        port: gates[0].port
+        host: 'localhost',
+        port: process.env.PORT
     });
+
     //Simulate EID reads at interval
     setInterval(() => {
         client.emit('eid_read',{
             firstname: 'John',
             lastname: 'Doe'
+        },function(err){
+            //Callback function where err is not null if an error or timeout occured
+            if(err){
+                console.log('Play the error sound');
+                return;
+            }
         });
     },2500);
+
 });
+
+setTimeout(function(){
+    console.log('Stopping gate');
+    gate.stop();
+},30000)

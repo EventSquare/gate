@@ -1,6 +1,6 @@
 {
     "name": "eventsquare-gate",
-    "version": "0.0.7",
+    "version": "0.1.0",
     "description": "Event support access control server.",
     "main": "gate.js",
     "dependencies": {
@@ -37,6 +37,10 @@
         "webpack": "^4.16.5",
         "webpack-cli": "^3.1.0",
         "webpack-dev-server": "^3.1.5"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/eventsquare/gate.git"
     },
     "scripts": {
         "test": "node ./test/test.js",

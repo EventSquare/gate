@@ -6,21 +6,33 @@ class Socket {
         this.socket = io(server);
         this.config = config;
         this.handleEventListener = handleEventListener;
+
+        this.onConnect = this.onConnect.bind(this);
+        this.onDisconnect = this.onDisconnect.bind(this);
         this.onEvent = this.onEvent.bind(this);
 
-        this.socket.on('connection', function(socket){
-            console.log('Client connected to ' + this.config.name);
-            socket.on('event', this.onEvent);    
-        }.bind(this));
+        //Listen for connection
+        this.socket.on('connection', this.onConnect);
     }
-    onEvent(payload){
+    onConnect(socket){
+        console.log('Client connected to ' + this.config.name);
+        //Listen for disconnection
+        socket.on('disconnect', this.onDisconnect);
+        socket.on('event', this.onEvent);    
+    }
+    onDisconnect(socket){
+        console.log('Client disconnected from ' + this.config.name);
+    }
+    onEvent(payload,callback){
         try {
             var data = this.decrypt(payload);
             console.log(this.config.name + ' received ' + data.event + ' from ' + data.source);
             this.handleEventListener(data.event,data);
-        } catch (ex) {
-            console.log(ex);
-            console.log('Error decrypting data.');
+            callback();
+        } catch (err) {
+            console.log(err);
+            callback(err);
+            console.log('Error processing event');
         }
     }
     decrypt(data){
