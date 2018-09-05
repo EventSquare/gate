@@ -7,7 +7,7 @@ class Client {
     constructor(newConfig){
         //Initialize Config
         this.config = {
-            cypher_key: null,
+            encryption_key: null,
             host: null,
             name: null,
             device: 'unknown',
@@ -30,8 +30,8 @@ class Client {
     }
     validateConfigOrDie(){
         let valid = true;
-        if(!this.config.cypher_key){
-            console.error("The config property 'cypher_key' is required when starting a Client.");
+        if(!this.config.encryption_key){
+            console.error("The config property 'encryption_key' is required when starting a Client.");
             valid = false;
         }
         if(!this.config.host){
@@ -95,7 +95,7 @@ class Client {
         }.bind(this),2500);
     }
     encrypt(data){
-        var key = Crypto.createCipher('aes-128-cbc', this.config.cypher_key);
+        var key = Crypto.createCipher('aes-128-cbc', this.config.encryption_key);
         var hash = key.update(JSON.stringify(data), 'utf8', 'hex')
         hash += key.final('hex');
         return hash;

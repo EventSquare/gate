@@ -36,6 +36,10 @@ class Sync {
         }
     }    
     start(){
+        if(!this.config.scantoken){
+            console.warn('No scantoken provided, not starting sync service.')
+            return;
+        }
         //Start Authentication + interval
         this.auth();
         this.authInterval = setInterval(function(){

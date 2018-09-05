@@ -17,7 +17,7 @@ const EventSquare = require('./gate.js');
 
 //Configuration
 const gate = new EventSquare.Gate({
-    cypher_key: 'XXXXXX',
+    encryption_key: 'XXXXXX',
     name: 'Main Entrance Gate',
     port: 3000,
     scantoken: 'ABC12345',
@@ -50,7 +50,7 @@ EventSquare.discover(2500,(gates) => {
 	//Connect with first gate found with Bonjour
     client = new EventSquare.Client({
         name: 'EID1',
-        cypher_key: 'XXXXXX',
+        encryption_key: 'XXXXXX',
         host: gates[0].host,
         port: gates[0].port
     });

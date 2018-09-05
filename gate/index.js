@@ -12,7 +12,7 @@ class Gate {
         this.config = {
             api_endpoint: "https://api.eventsquare.io/1.0",
             bonjour: true,
-            cypher_key: null,
+            encryption_key: null,
             name: null,
             port: 3000,
             scantoken: null,
@@ -39,10 +39,6 @@ class Gate {
     }
     validateConfigOrDie(){
         let valid = true;
-        if(!this.config.scantoken){
-            console.error("The config property 'scantoken' is required when starting a Gate.");
-            valid = false;
-        }
         if(!this.config.name){
             console.error("The config property 'name' is required when starting a Gate.");
             valid = false;
