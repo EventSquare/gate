@@ -60,6 +60,14 @@ class Client {
         this.events[event] = callback;
     }
     emit(event,data,callback){
+
+        if(!this.connected){
+            console.log('No connection available when emitting');
+            if(typeof callback !== 'undefined'){
+                callback('no_connection');
+            }
+            return;
+        }
         
         var hash = this.encrypt({
             source: this.config.name,

@@ -43,18 +43,18 @@ EventSquare.Client.discover(2500,(gates) => {
     });
 
     // //Simulate EID reads at interval
-    // setInterval(() => {
-    //     client.emit('eid_read',{
-    //         firstname: 'John',
-    //         lastname: 'Doe'
-    //     },function(err){
-    //         //Callback function where err is not null if an error or timeout occured
-    //         if(err){
-    //             console.log('Play the error sound');
-    //             return;
-    //         }
-    //     });
-    // },2500);
+    setInterval(() => {
+        client.emit('eid_read',{
+            firstname: 'John',
+            lastname: 'Doe'
+        },function(err){
+            //Callback function
+            if(err){
+                console.log('Play the error sound');
+                return;
+            }
+        });
+    },2500);
 
 });
 
