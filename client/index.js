@@ -23,6 +23,7 @@ class Client {
         this.events = {};
         //Bind callbacks
         this.onConnect = this.onConnect.bind(this);
+        this.onEvent = this.onEvent.bind(this);
         this.onDisconnect = this.onDisconnect.bind(this);
         this.handleEventListener = this.handleEventListener.bind(this);
         //Connect
@@ -51,6 +52,7 @@ class Client {
     connect(){
         this.socket = io("http://"+this.config.host+":"+this.config.port);
         this.socket.on('connect', this.onConnect);
+        this.socket.on('event', this.onEvent);
         this.socket.on('disconnect', this.onDisconnect);
     }
     disconnect(){
@@ -70,7 +72,7 @@ class Client {
         }
         
         var hash = this.encrypt({
-            source: this.config.name,
+            name: this.config.name,
             event: event,
             data: data
         });
@@ -100,21 +102,40 @@ class Client {
         hash += key.final('hex');
         return hash;
     }
-    onConnect(){
+    decrypt(data){
+        var key = Crypto.createDecipher('aes-128-cbc', this.config.encryption_key);
+        var data = key.update(data, 'hex', 'utf8')
+        data += key.final('utf8');
+        data = JSON.parse(data);
+        return data;
+    }
+    onConnect(socket){
         this.connected = true;
-        this.emit('handshake',{
+        this.handShake();
+        //socket.join(this.config.name);
+        console.log('Connected to gate');
+        this.handleEventListener('connect');
+    }
+    onEvent(payload){
+        try {
+            var data = this.decrypt(payload);
+            this.handleEventListener(data.event,data);
+        } catch (err) {
+            console.log("Error decrypting incoming event, please verify encryption key.");
+        }
+    }
+    onDisconnect(socket){
+        this.connected = false;
+        console.log('Disconnected from gate');
+        this.handleEventListener('disconnect');
+    }
+    handShake() {
+        this.socket.emit('handshake',{
             name: this.config.name,
             device: this.config.device,
             ip: ip.address(),
             socket_id: this.socket.id
         });
-        console.log('Connected to gate');
-        this.handleEventListener('connect');
-    }
-    onDisconnect(){
-        this.connected = false;
-        console.log('Connected from gate');
-        this.handleEventListener('disconnect');
     }
     handleEventListener(event,payload){
         if(typeof this.events[event] !== 'undefined'){

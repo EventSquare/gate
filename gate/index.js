@@ -35,7 +35,6 @@ class Gate {
         this.sync = new Sync(this.config);
         //Initialize Webmin
         this.router = new Router(this.app,this.config,this.sync);
-        
     }
     validateConfigOrDie(){
         let valid = true;
@@ -60,7 +59,22 @@ class Gate {
     on(event,callback){
         this.events[event] = callback;
     }
+    forward(targets,event){
+        if(!targets || targets.constructor !== Array){
+            console.log('Targets arguments is not an Array');
+            return;
+        }
+        if(!event){
+            console.log('No event specified in emit');
+            return;
+        }
+        //Find socket ids
+        if(targets.length){
+            this.socket.emit(targets,event);
+        }
+    }
     handleEventListener(event,payload){
+        //Catch other events and call listener(s)
         if(typeof this.events[event] !== 'undefined'){
             this.events[event](payload);
         }
