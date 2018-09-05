@@ -102,18 +102,18 @@ class Client {
     }
     onConnect(){
         this.connected = true;
-        console.log(this.config.name + ' connected to gate');
         this.emit('handshake',{
             name: this.config.name,
             device: this.config.device,
             ip: ip.address(),
             socket_id: this.socket.id
         });
+        console.log('Connected to gate');
         this.handleEventListener('connect');
     }
     onDisconnect(){
         this.connected = false;
-        console.log(this.config.name + ' disconnected from gate');
+        console.log('Connected from gate');
         this.handleEventListener('disconnect');
     }
     handleEventListener(event,payload){

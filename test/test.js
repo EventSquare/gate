@@ -78,12 +78,11 @@ gate.start();
 //  }
 
 
-
 // //Listen for incoming EID reads
-// gate.on('eid_read',event => {
-//     //event object contains source, event and data.
-//     console.log(event);
-// });
+gate.on('eid_read',event => {
+    //event object contains source, event and data.
+    console.log(event);
+});
 
 // gate.on('handshake',event => {
 //     //event object contains source, event and data.

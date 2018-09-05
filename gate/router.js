@@ -27,7 +27,7 @@ class Router {
                             logged_at: new Date()
                         });
                     });
-                    console.log('Received ' + req.query.count + ' ' + req.params.type + ' from ' + req.query.cid);
+                    //console.log('Received ' + req.query.count + ' ' + req.params.type + ' from ' + req.query.cid);
                     res.sendStatus(200);
                 } catch (e) {
                     console.log(error)
@@ -284,7 +284,7 @@ class Router {
 
         //Reset all tickets and scan information
         this.app.get('/api/resetcounts', function(req, res){
-            console.log('Resetting counters');
+            //console.log('Resetting counters');
             DB.open(this.config.storage_path, db => {
                 db.write(() => {
                     let allCounts = db.objects('Count');
@@ -299,7 +299,7 @@ class Router {
 
         //Reset all tickets and scan information
         this.app.get('/api/reset', function(req, res){
-            console.log('Resetting tickets, scans and last sync time');
+            //console.log('Resetting tickets, scans and last sync time');
             this.sync.reset();
             res.sendStatus(200);
         }.bind(this));

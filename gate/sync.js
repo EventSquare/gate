@@ -103,12 +103,10 @@ class Sync {
         DB.open(this.config.storage_path, db => {
 
             this.syncing = true;
-            console.log('Syncing started');
 
             //Find new scans to sync
             newScans = db.objects('Scan').filtered('id == null AND scanned_at < $0',moment().toDate());
             if(newScans.length){
-                console.log(newScans.length + ' need syncing');
                 for(var i=0;i<newScans.length;i++){
                     let ticket = db.objectForPrimaryKey('Ticket', newScans[i].ticket_id);
                     if(ticket){
@@ -151,7 +149,6 @@ class Sync {
 
                 //Remove activity before last
                 if(newScans.length){
-                    console.log('Removing ' + newScans.length + ' scans from before sync');
                     db.write(() => {
                         db.delete(newScans);
                     });
@@ -163,11 +160,9 @@ class Sync {
             .catch(function (error) {
                 this.syncing = false;
                 console.log(error);
-                console.log('Unable to sync.')
             }.bind(this));
 
         }, error => {
-            console.log('Problem receiving scans that need syncing');
             console.warn(error);
         });
 
@@ -217,8 +212,6 @@ class Sync {
     }
     processTickets(tickets) {
 
-        console.log('Processing tickets');
-
         DB.open(this.config.storage_path, db => {
 
             let scans = [];
@@ -250,7 +243,6 @@ class Sync {
                         }
                     }
                 }
-                console.log(tickets.length + ' tickets updated');
                 //Insert scans
                 for(var i=0;i<scans.length;i++){
                     db.create('Scan', {
@@ -261,14 +253,12 @@ class Sync {
                         type: scans[i].type,
                     });
                 }
-                console.log(scans.length + ' scans inserted');
             })
         }, error => {
             console.warn(error);
         });
     }
     processOrders(orders) {
-        console.log('Processing orders');
         DB.open(this.config.storage_path, db => {
             db.write(() => {
                 for(var i=0;i<orders.length;i++){
@@ -285,10 +275,8 @@ class Sync {
         }, error => {
             console.warn(error);
         });
-        console.log(orders.length + ' orders updated');
     }
     processPockets(pockets) {
-        console.log('Processing pockets');
         DB.open(this.config.storage_path, db => {
             db.write(() => {
                 for(var i=0;i<pockets.length;i++){
@@ -302,10 +290,8 @@ class Sync {
         }, error => {
             console.warn(error);
         });
-        console.log(pockets.length + ' pockets updated');
     }
     processCustomers(customers) {
-        console.log('Processing customers');
         DB.open(this.config.storage_path, db => {
             db.write(() => {
                 for(var i=0;i<customers.length;i++){
@@ -322,7 +308,6 @@ class Sync {
         }, error => {
             console.warn(error);
         });
-        console.log(customers.length + ' customers updated');
     }
     
     reset() {

@@ -15,18 +15,16 @@ class Socket {
         this.socket.on('connection', this.onConnect);
     }
     onConnect(socket){
-        console.log('Client connected to ' + this.config.name);
         //Listen for disconnection
         socket.on('disconnect', this.onDisconnect);
         socket.on('event', this.onEvent);
     }
     onDisconnect(socket){
-        console.log('Client disconnected from ' + this.config.name);
+        
     }
     onEvent(payload,callback){
         try {
             var data = this.decrypt(payload);
-            console.log(this.config.name + ' received ' + data.event + ' from ' + data.source);
             this.handleEventListener(data.event,data);
             if(typeof callback !== 'undefined'){
                 callback();
@@ -36,7 +34,6 @@ class Socket {
             if(typeof callback !== 'undefined'){
                 callback(err);
             }
-            console.log('Error processing event');
         }
     }
     decrypt(data){
