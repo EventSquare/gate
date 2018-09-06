@@ -132,11 +132,15 @@ class Printer {
 
         const endPrint = function(element){
             return new Promise(resolve => {
-                printer.feed(2);
-                printer.cut();
-                printer.close();
+                try{
+                    printer.feed(2);
+                    printer.cut();
+                    printer.close();
+                    console.log("Finished printing ("+ip+":"+port+")!")
+                }catch(Exception){
+                    console.trace("Exception while finish printing ("+ip+":"+port+"): ",Exception);
+                }
                 resolve();
-                console.log("Finished printing !")
             });
         }
 
@@ -154,7 +158,7 @@ class Printer {
                         return endPrint(element);
                 }
             } else {
-                console.log("EUHHH... Empty element ????");
+                console.log("Warn: EUHHH... Empty element ????");
                 return Promise.resolve();
             }
         }
@@ -166,13 +170,17 @@ class Printer {
             });
         }
 
+        try{
+            // DO THE PRINTING NOW...
+            networkDevice.open(function (err) {
+                console.log("Printing ticket now on '"+ip+":"+port+"'");
+                // compress all input into print jobs
+                printContent.reduce(sequencePromises, Promise.resolve());
+            });
+        }catch(Exception){
+            console.trace("Failed to print : ",Exception);
+        }
 
-        // DO THE PRINTING NOW...
-        networkDevice.open(function () {
-            console.log("Printing ticket now...");
-            // compress all input into print jobs
-            printContent.reduce(sequencePromises, Promise.resolve());
-        });
     }
 };
 
