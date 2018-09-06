@@ -22,6 +22,7 @@ class Gate {
             timezone: "Europe/Brussels",
             eventName: "The Amazing Event",
             eventDate: "a/nice/day",
+            eventLocation: "Heaven Cloud 5",
             footerline: 'Powered by EventSquare',
         }
         this.events = {};
@@ -97,6 +98,7 @@ class Gate {
             let printData = {
                 eventName: this.config.eventName,
                 eventDate: this.config.eventDate,
+                eventLocation: this.config.eventLocation,
                 footerline: this.config.footerline,
                 reference: order.reference,
                 created: order.created_at,

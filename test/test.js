@@ -13,8 +13,9 @@ const gate = new EventSquare.Gate({
     timezone: process.env.TIMEZONE,
     // specific
     eventName: "Belgian Air Force Days",
+    eventLocation: "Air Base Kleine-Brogel",
     eventDate: "7-8-9 September 2018",
-    footerline: 'Powered by EventSquare',
+    footerline: '~~ Powered by EventSquare ~~',
 });
 
 gate.start();

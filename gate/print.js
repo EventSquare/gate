@@ -16,7 +16,8 @@ class Printer {
         printContent.push({
             type: 'HEADER',
             eventName: printdata.eventName,
-            eventDate: printdata.eventDate
+            eventDate: printdata.eventDate,
+            eventLocation: printdata.eventLocation
         });
 
         // ticket content
@@ -87,14 +88,22 @@ class Printer {
                 printer.align('ct')
                     .size(2, 3)
                     .style('B')
-                    .text(element.eventName)
-                    .size(1, 1)
-                    .control('LF')
-                    .size(1, 2)
-                    .text(element.eventDate)
-                    .style('N')
-                    .size(1, 1)
-                    .control('LF');
+                    .text(element.eventName);
+                if(element.eventDate && element.eventDate.trim().length>0){
+                    printer.size(1, 1)
+                        .control('LF')
+                        .size(1, 2)
+                        .text(element.eventDate);
+                }                    
+                if(element.eventLocation && element.eventLocation.trim().length>0){
+                    printer.style('N')
+                        .size(1, 1)
+                        .control('LF')
+                        .size(1, 2)
+                        .text(element.eventLocation);
+                }
+                printer.size(1, 1)
+                       .control('LF');
                 resolve();
             });
         };
@@ -121,27 +130,28 @@ class Printer {
             });
         };
 
+        const endPrint = function(element){
+            return new Promise(resolve => {
+                printer.feed(2);
+                printer.cut();
+                printer.close();
+                resolve();
+                console.log("Finished printing !")
+            });
+        }
+
+
         const myPromise = function (element) {
             if (element) {
                 switch (element.type) {
                     case 'HEADER':
                         return printHeader(element);
                     case 'TICKET':
-                        return new Promise(resolve => {
-                            printQRCode(element.ticket).then(() => {
-                                resolve();
-                            });
-                        });
+                        return printQRCode(element.ticket);
                     case 'FOOTER':
                         return printFooter(element);
                     case 'END':
-                        return new Promise(resolve => {
-                            printer.feed(2);
-                            printer.cut();
-                            printer.close();
-                            resolve();
-                            console.log("Finished printing !")
-                        });
+                        return endPrint(element);
                 }
             } else {
                 console.log("EUHHH... Empty element ????");
