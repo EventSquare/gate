@@ -1,101 +1,169 @@
 const escpos = require('escpos');
 
 class Printer {
-    constructor(){
+    constructor() {
     }
 
-
-    static print(ip,port,printdata){
-        console.log("printing on ip",ip,"port",port,"printdata",printdata);
-
-        const networkDevice = new escpos.Network(ip,port);
+    static print(ip, port, printdata) {
+        const networkDevice = new escpos.Network(ip, port);
         const options = {};
-        const printer = new escpos.Printer(networkDevice, options );
-        
+        const printer = new escpos.Printer(networkDevice, options);
 
-        printdata.tickets.push(undefined);
+        // define what has to be printed each iteration...
+        const printContent = [];
 
-        const printJob = function(element){
+        // header content
+        printContent.push({
+            type: 'HEADER',
+            eventName: printdata.eventName,
+            eventDate: printdata.eventDate
+        });
+
+        // ticket content
+        printdata.tickets.forEach(element => {
+            printContent.push({
+                type: 'TICKET',
+                ticket: Object.assign({}, element)
+            });
+        });
+
+        // footer
+        printContent.push({
+            type: 'FOOTER',
+            orderref: printdata.reference,
+            subtext: printdata.footerline,
+            payment: printdata.payment,
+            created: printdata.created
+        });
+
+        // end of ticket
+        printContent.push({
+            type: 'END'
+        });
+
+
+        const printQRCode = function (element) {
             return new Promise((resolve) => {
-                if(element){
-                    console.log("Printing ",element.type.name,element.uuid);
-                    printer.text("Type:"+element.type.name);
-                    console.log("QR data = ",element.qrdata);
-                    //printer.qrcode(element.qrdata,1,'L',3);
-                    printer.model('qsprinter')
-                           .qrimage(element.qrdata,{
-                                ec_level: 'M',
-                                type: 'png',
-                                size: 5,
-                                margin: 10
-                           },function(err){
-                               setTimeout(()=>{
-                                   resolve();
-                               },1);
-                           }).then(()=>{
+                if (element) {
+                    printer.align('ct')
+                        .size(1, 1)
+                        .style('N')
+                        .println("__________________________________________")
+                        .control('LF')
+                        .align('lt')
+                        .size(2, 2)
+                        .font('B')
+                        .style('B')
+                        .text("  " + element.type.name)
+                        .size(1, 1)
+                        .style('N')
+                        .control('LF')
+                        .text("    Full Name: " + element.data.lastname + ", " + element.data.firstname)
+                        .text("     Birthday: " + element.data.birthday + " - " + element.data.birthplace)
+                        .text("  Nationality: " + element.data.nationality)
+                        .control('LF')
+                        .align('ct')
 
-                                console.log("RESOLVED");
-                               resolve();
-                           });
-                    /*
-                    printer.qrimage(element.qrdata, function(err){
-                        console.log("qr image done");
-                        if(err)
-                            console.log("FAILED:",err);
-                        printer.feed(5)
+                    printer.qrimage(element.qrdata, {
+                        ec_level: 'M',
+                        type: 'png',
+                        size: 5,
+                        margin: 6
+                    }, function (err) {
+                        if (err)
+                            console.log("Error QR print: ", err);
+                    }).then(() => {
                         resolve();
                     });
-                    */
-                }else{
+                } else {
+                    console.log("QR: Empty element...");
+                    resolve();
                 }
             });
         };
-        
-        const myPromise = function(element){
-            if(element){
-                printJob(element).then(() => {
-                    console.log('printed: ' + element.type.name,element.uuid);
-                });
-            }else{
-                return new Promise(resolve=>{resolve
-                    setTimeout(()=>{
-                        console.log("FINISHINresolve !");
-                        printer.feed(5);
-                        printer.cut();
-                        printer.close();
-                        resolve();
-                    },1);
-                })
+
+        const printHeader = function (element) {
+            return new Promise(resolve => {
+                printer.align('ct')
+                    .size(2, 3)
+                    .style('B')
+                    .text(element.eventName)
+                    .size(1, 1)
+                    .control('LF')
+                    .size(1, 2)
+                    .text(element.eventDate)
+                    .style('N')
+                    .size(1, 1)
+                    .control('LF');
+                resolve();
+            });
+        };
+
+        const printFooter = function (element) {
+            return new Promise(resolve => {
+                printer.align('ct')
+                    .control('LF')
+                    .control('LF')
+                    .size(1, 1)
+                    .println("__________________________________________")
+                    .style('N')
+                    .align('lt')
+                    .text("    Order: " + element.orderref)
+                    .text("    Payment: " + element.payment)
+                    .text("    Issued: " + element.created)
+                    .align('ct')
+                    .control('LF')
+                    .style("I")
+                    .text(element.subtext)
+                    .control('LF')
+                    ;
+                resolve();
+            });
+        };
+
+        const myPromise = function (element) {
+            if (element) {
+                switch (element.type) {
+                    case 'HEADER':
+                        return printHeader(element);
+                    case 'TICKET':
+                        return new Promise(resolve => {
+                            printQRCode(element.ticket).then(() => {
+                                resolve();
+                            });
+                        });
+                    case 'FOOTER':
+                        return printFooter(element);
+                    case 'END':
+                        return new Promise(resolve => {
+                            printer.feed(2);
+                            printer.cut();
+                            printer.close();
+                            resolve();
+                            console.log("Finished printing !")
+                        });
+                }
+            } else {
+                console.log("EUHHH... Empty element ????");
+                return Promise.resolve();
             }
         }
 
-        const sequencePromises = function(promise, element) {
+        // concrete split of work to do...
+        const sequencePromises = function (promise, element) {
             return new Promise((resolve) => {
-              resolve(promise.then(_ => myPromise(element)));
+                resolve(promise.then(_ => myPromise(element)));
             });
-          } 
-
-        networkDevice.open(function(){
-            console.log("Printing ticket now...")
-            printer
-                .font('a')
-                .align('ct')
-                .style('bu')
-                .size(1, 1)
-                .text(printdata.eventName)
-                .text(printdata.eventDate)
-                .text("Created: "+printdata.created)
-                .text("Payment: "+ printdata.payment);
+        }
 
 
-            console.log("reduce...");
-            (printdata.tickets).reduce(sequencePromises, Promise.resolve());
-                        
-          });
+        // DO THE PRINTING NOW...
+        networkDevice.open(function () {
+            console.log("Printing ticket now...");
+            // compress all input into print jobs
+            printContent.reduce(sequencePromises, Promise.resolve());
+        });
     }
 };
-
-
-
 
 module.exports = Printer;
