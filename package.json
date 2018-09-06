@@ -7,6 +7,7 @@
         "axios": "^0.18.0",
         "bonjour": "^3.5.0",
         "dotenv": "^6.0.0",
+        "escpos": "^2.4.9",
         "express": "^4.16.3",
         "ip": "^1.1.5",
         "macaddress": "^0.2.9",

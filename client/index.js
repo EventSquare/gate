@@ -1,7 +1,7 @@
 const io = require('socket.io-client');
-const Crypto = require("crypto");
 const bonjour = require('bonjour');
 const ip = require('ip');
+const Utils = require('../lib/utils');
 
 class Client {
     constructor(newConfig){
@@ -71,11 +71,11 @@ class Client {
             return;
         }
         
-        var hash = this.encrypt({
+        var hash = Utils.encrypt({
             name: this.config.name,
             event: event,
             data: data
-        });
+        },this.config.encryption_key);
 
         let ackTimeout = null;
 
@@ -96,19 +96,6 @@ class Client {
             console.log('There was a problem emitting the ' + event);
         }.bind(this),2500);
     }
-    encrypt(data){
-        var key = Crypto.createCipher('aes-128-cbc', this.config.encryption_key);
-        var hash = key.update(JSON.stringify(data), 'utf8', 'hex')
-        hash += key.final('hex');
-        return hash;
-    }
-    decrypt(data){
-        var key = Crypto.createDecipher('aes-128-cbc', this.config.encryption_key);
-        var data = key.update(data, 'hex', 'utf8')
-        data += key.final('utf8');
-        data = JSON.parse(data);
-        return data;
-    }
     onConnect(socket){
         this.connected = true;
         this.handShake();
@@ -118,10 +105,10 @@ class Client {
     }
     onEvent(payload){
         try {
-            var data = this.decrypt(payload);
+            var data = Utils.decrypt(payload,this.config.encryption_key);
             this.handleEventListener(data.event,data);
         } catch (err) {
-            console.log("Error decrypting incoming event, please verify encryption key.");
+            console.log("Error decrypting incoming event on client, please verify encryption key.");
         }
     }
     onDisconnect(socket){

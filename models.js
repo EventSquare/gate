@@ -45,3 +45,39 @@
 //         birthplace: "Bonheiden",
 //         nationality: "Belg"
 //  }
+
+// let QRSalesTicket = {
+//             uuid: "1ee66960-b0eb-11e8-a5f3-a17d5c8f9e16",
+//             type: {
+//                 id: "758994840588",
+//                 name: "Regular"
+//             },
+//             product: null,
+//             show: null,
+//             place: null
+// }
+
+// let PrintData = {
+//     eventName: "My Event",
+//     eventDate: "EventDate",
+//     reference: order.reference,
+//     created: order.created_at,
+//     payment: order.payment_method,
+//     tickets: []
+// };
+
+  
+// let ticketData = {
+//     data: {
+//         firstname: "Glenn",
+//         lastname: "Engelen",
+//         birthday: "01/06/1984",
+//         birthplace: "Bonheiden",
+//         nationality: "Belg"
+//     },
+//     type: {
+//         id: "758994840588",
+//         name: "Regular"
+//     },
+//     qrdata: encrypted_qr
+// };

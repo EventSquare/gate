@@ -5,6 +5,8 @@ const Bonjour = require('./bonjour');
 const Router = require('./router');
 const Socket = require('./socket');
 const Sync = require('./sync');
+const Utils = require('../lib/utils');
+const Printer = require('./print');
 
 class Gate {
     constructor(newConfig){
@@ -85,6 +87,56 @@ class Gate {
         //Stop Bonjour
         Bonjour.stop();
     }
+    printOrder(order){
+        console.log("Got to print order...")
+        try{
+            let printData = {
+                eventName: "My Event",
+                eventDate: "EventDate",
+                reference: order.reference,
+                created: order.created_at,
+                payment: order.payment_method,
+                tickets: []
+            };
+            //let encrypted_qr = Utils.encrypt(printData,this.config.encryption_key);
+            //let encrypted_qr = Utils.encrypt(printData,this.config.encryption_key);
+            
+
+            order.tickets.forEach(ticket => {
+                let qrData = {
+                    u: ticket.uuid,
+                    t: ticket.type.id
+                };
+
+                let encrypted_qr = Utils.encrypt(qrData,this.config.encryption_key);
+                //let encrypted_qr =Buffer.from(JSON.stringify(qrData)).toString('base64');
+
+                let ticketData = {
+                    uuid: ticket.uuid,
+                    data: Object.assign({},ticket.data),
+                    type: Object.assign({},ticket.type),
+                    qrdata: encrypted_qr
+                }
+
+                printData.tickets.push(ticketData);
+                
+            });
+            
+            console.log("Printing...");
+            // TODO REMOVE !!
+            this.config.printer = {
+                ip: '192.168.1.87', 
+                port: 9100
+            }
+            Printer.print(this.config.printer.ip, this.config.printer.port, printData);
+
+
+        }catch(err){
+            console.trace(err);
+        }
+
+    }
+   
 }
 
 module.exports = Gate;

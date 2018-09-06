@@ -1,5 +1,5 @@
 const io = require('socket.io');
-const Crypto = require("crypto");
+const Utils = require('../lib/utils');
 
 class Socket {
     constructor(server,config,handleEventListener){
@@ -59,36 +59,23 @@ class Socket {
     }
     onEvent(payload,callback){
         try {
-            var data = this.decrypt(payload);
+            var data = Utils.decrypt(payload,this.config.encryption_key);
             this.handleEventListener(data.event,data);
             if(typeof callback !== 'undefined'){
                 callback();
             }
         } catch (err) {
-            console.log("Error decrypting incoming event, please verify encryption key.");
+            console.log("Error decrypting incoming event on server, please verify encryption key.");
             if(typeof callback !== 'undefined'){
                 callback(err);
             }
         }
     }
     emit(targets,event){
-        let hash = this.encrypt(event);
+        let hash = Utils.encrypt(event,this.config.encryption_key);
         for(var i = 0; i < targets.length; i++){
             this.socket.to(targets[i]).emit('event', hash);
         }
-    }
-    encrypt(data){
-        var key = Crypto.createCipher('aes-128-cbc', this.config.encryption_key);
-        var hash = key.update(JSON.stringify(data), 'utf8', 'hex')
-        hash += key.final('hex');
-        return hash;
-    }
-    decrypt(data){
-        var key = Crypto.createDecipher('aes-128-cbc', this.config.encryption_key);
-        var data = key.update(data, 'hex', 'utf8')
-        data += key.final('utf8');
-        data = JSON.parse(data);
-        return data;
     }
     stop(){
         this.socket.close();
