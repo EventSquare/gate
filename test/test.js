@@ -51,7 +51,7 @@ setInterval(() => {
 //Start Box Office client
 client2 = new EventSquare.Client({
     name: 'BOXOFFICE-1',
-    device: 'eid_reader',
+    device: 'box_office',
     encryption_key: process.env.ENCRYPTION_KEY,
     host: 'localhost',
     port: process.env.PORT
