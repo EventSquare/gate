@@ -7,7 +7,7 @@ const gate = new EventSquare.Gate({
     api_endpoint: process.env.API_ENDPOINT,
     bonjour: true,
     encryption_key: process.env.ENCRYPTION_KEY,
-    name: 'Peter Test Gate',
+    name: process.env.DEVICE_NAME,
     port: process.env.PORT,
     storage_path: path.join(__dirname + '/../storage'),
     timezone: process.env.TIMEZONE,
@@ -30,13 +30,6 @@ gate.on('eid_read',(event) => {
 gate.on('print_order',(event) => {
     console.log("INCOMING print order ! (",event,")");
     gate.printOrder(event.data);
-    // switch(event.name){
-    //     case 'GATE':
-    //         gate.forward(['BOXOFFICE-1'],event);
-    //         break;
-    //     default:
-    //         break;
-    // }
 
 });
 
