@@ -1,6 +1,6 @@
 {
     "name": "eventsquare-gate",
-    "version": "0.1.8",
+    "version": "0.1.9",
     "description": "Event support access control server.",
     "main": "gate.js",
     "dependencies": {
@@ -18,6 +18,9 @@
         "uuidv4": "^1.0.1",
         "vue": "^2.5.17",
         "vue-router": "^3.0.1"
+    },
+    "babel": {
+        "presets": ["env", "react"]
     },
     "homepage": "https://www.eventsquare.co",
     "devDependencies": {
