@@ -19,7 +19,11 @@ class Gate {
             port: 3000,
             scantoken: null,
             storage_path: null,
-            timezone: "Europe/Brussels"
+            timezone: "Europe/Brussels",
+            eventName: "The Amazing Event",
+            eventDate: "a/nice/day",
+            eventLocation: "Heaven Cloud 5",
+            footerline: 'Powered by EventSquare',
         }
         this.events = {};
         //Update Configuration
@@ -87,20 +91,20 @@ class Gate {
         //Stop Bonjour
         Bonjour.stop();
     }
-    printOrder(order){
-        console.log("Got to print order...")
+
+    /** Print order on POS printer */
+    printOrder(order, print_ip, print_port){
         try{
             let printData = {
-                eventName: "My Event",
-                eventDate: "EventDate",
+                eventName: this.config.eventName,
+                eventDate: this.config.eventDate,
+                eventLocation: this.config.eventLocation,
+                footerline: this.config.footerline,
                 reference: order.reference,
                 created: order.created_at,
                 payment: order.payment_method,
                 tickets: []
             };
-            //let encrypted_qr = Utils.encrypt(printData,this.config.encryption_key);
-            //let encrypted_qr = Utils.encrypt(printData,this.config.encryption_key);
-            
 
             order.tickets.forEach(ticket => {
                 let qrData = {
@@ -108,8 +112,10 @@ class Gate {
                     t: ticket.type.id
                 };
 
-                let encrypted_qr = Utils.encrypt(qrData,this.config.encryption_key);
-                //let encrypted_qr =Buffer.from(JSON.stringify(qrData)).toString('base64');
+                // encrypted...
+                // let encrypted_qr = Utils.encrypt(qrData,this.config.encryption_key);
+                // base64 encoded
+                let encrypted_qr =Buffer.from(JSON.stringify(qrData)).toString('base64');
 
                 let ticketData = {
                     uuid: ticket.uuid,
@@ -119,24 +125,16 @@ class Gate {
                 }
 
                 printData.tickets.push(ticketData);
-                
             });
             
-            console.log("Printing...");
-            // TODO REMOVE !!
-            this.config.printer = {
-                ip: '192.168.1.87', 
-                port: 9100
-            }
-            Printer.print(this.config.printer.ip, this.config.printer.port, printData);
-
-
+            // print on specific printer...
+            Printer.print(print_ip, print_port, printData);
         }catch(err){
+            console.log("Printing Error:")
             console.trace(err);
         }
-
     }
-   
+
 }
 
 module.exports = Gate;

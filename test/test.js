@@ -11,6 +11,11 @@ const gate = new EventSquare.Gate({
     port: process.env.PORT,
     storage_path: path.join(__dirname + '/../storage'),
     timezone: process.env.TIMEZONE,
+    // specific
+    eventName: "Belgian Air Force Days",
+    eventLocation: "Air Base Kleine-Brogel",
+    eventDate: "7-8-9 September 2018",
+    footerline: '~~ Powered by EventSquare ~~',
 });
 
 gate.start();
@@ -28,9 +33,27 @@ gate.on('eid_read',(event) => {
 
 // Printing
 gate.on('print_order',(event) => {
-    console.log("INCOMING print order ! (",event,")");
-    gate.printOrder(event.data);
+    // TODO REPLACE
+    printer= {
+        ip: '127.0.0.1',
+        port: 9100
+    };
 
+    switch (event.name) {
+        case 'BOXOFFICE-1':
+            break;
+        case 'BOXOFFICE-2':
+            break;
+        case 'BOXOFFICE-3':
+            break;
+        case 'BOXOFFICE-4':
+            break;
+        default:
+            // TODO...
+            printer.ip='192.168.1.87';
+        break;
+    }
+    gate.printOrder(event.data, printer.ip, printer.port);
 });
 
 //Discover gates
@@ -64,7 +87,7 @@ setTimeout(() => {
                 "vat": 21,
                 "type": {
                   "id": "758994840588",
-                  "name": "Vrijdag"
+                  "name": "VIP"
                 },
                 "show": null,
                 "data": {
@@ -98,7 +121,7 @@ setTimeout(() => {
                 "vat": 21,
                 "type": {
                   "id": "758994840588",
-                  "name": "Vrijdag"
+                  "name": "Saturday"
                 },
                 "show": null,
                 "data": {
