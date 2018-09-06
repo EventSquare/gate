@@ -1,101 +1,189 @@
 const escpos = require('escpos');
 
 class Printer {
-    constructor(){
+    constructor() {
     }
 
-
-    static print(ip,port,printdata){
-        console.log("printing on ip",ip,"port",port,"printdata",printdata);
-
-        const networkDevice = new escpos.Network(ip,port);
+    static print(ip, port, printdata) {
+        const networkDevice = new escpos.Network(ip, port);
         const options = {};
-        const printer = new escpos.Printer(networkDevice, options );
-        
+        const printer = new escpos.Printer(networkDevice, options);
 
-        printdata.tickets.push(undefined);
+        // define what has to be printed each iteration...
+        const printContent = [];
 
-        const printJob = function(element){
-            return new Promise((resolve) => {
-                if(element){
-                    console.log("Printing ",element.type.name,element.uuid);
-                    printer.text("Type:"+element.type.name);
-                    console.log("QR data = ",element.qrdata);
-                    //printer.qrcode(element.qrdata,1,'L',3);
-                    printer.model('qsprinter')
-                           .qrimage(element.qrdata,{
-                                ec_level: 'M',
-                                type: 'png',
-                                size: 5,
-                                margin: 10
-                           },function(err){
-                               setTimeout(()=>{
-                                   resolve();
-                               },1);
-                           }).then(()=>{
+        // header content
+        printContent.push({
+            type: 'HEADER',
+            eventName: printdata.eventName,
+            eventDate: printdata.eventDate,
+            eventLocation: printdata.eventLocation
+        });
 
-                                console.log("RESOLVED");
-                               resolve();
-                           });
-                    /*
-                    printer.qrimage(element.qrdata, function(err){
-                        console.log("qr image done");
-                        if(err)
-                            console.log("FAILED:",err);
-                        printer.feed(5)
-                        resolve();
-                    });
-                    */
-                }else{
-                }
+        // ticket content
+        printdata.tickets.forEach(element => {
+            printContent.push({
+                type: 'TICKET',
+                ticket: Object.assign({}, element)
             });
-        };
-        
-        const myPromise = function(element){
-            if(element){
-                printJob(element).then(() => {
-                    console.log('printed: ' + element.type.name,element.uuid);
-                });
-            }else{
-                return new Promise(resolve=>{resolve
-                    setTimeout(()=>{
-                        console.log("FINISHINresolve !");
-                        printer.feed(5);
-                        printer.cut();
-                        printer.close();
-                        resolve();
-                    },1);
-                })
-            }
+        });
+
+        // footer
+        printContent.push({
+            type: 'FOOTER',
+            orderref: printdata.reference,
+            subtext: printdata.footerline,
+            payment: printdata.payment,
+            created: printdata.created
+        });
+
+        // end of ticket
+        printContent.push({
+            type: 'END'
+        });
+
+        // concrete split of work to do...
+        const sequencePromises = function (promise, element) {
+            return new Promise((resolve) => {
+                resolve(promise.then(_ => Printer.myPromise(printer,element)));
+            });
         }
 
-        const sequencePromises = function(promise, element) {
-            return new Promise((resolve) => {
-              resolve(promise.then(_ => myPromise(element)));
+        try{
+            // DO THE PRINTING NOW...
+            networkDevice.open(function (err) {
+                console.log("Printing ticket now on '"+ip+":"+port+"'");
+                // compress all input into print jobs
+                printContent.reduce(sequencePromises, Promise.resolve());
             });
-          } 
+        }catch(Exception){
+            console.trace("Failed to print : ",Exception);
+        }
 
-        networkDevice.open(function(){
-            console.log("Printing ticket now...")
-            printer
-                .font('a')
-                .align('ct')
-                .style('bu')
-                .size(1, 1)
-                .text(printdata.eventName)
-                .text(printdata.eventDate)
-                .text("Created: "+printdata.created)
-                .text("Payment: "+ printdata.payment);
-
-
-            console.log("reduce...");
-            (printdata.tickets).reduce(sequencePromises, Promise.resolve());
-                        
-          });
     }
+
+    static printQRCode(printer, element) {
+        return new Promise((resolve) => {
+            if (element) {
+                printer.align('ct')
+                    .size(1, 1)
+                    .style('N')
+                    .println("__________________________________________")
+                    .control('LF')
+                    .align('lt')
+                    .size(2, 2)
+                    .font('B')
+                    .style('B')
+                    .text("  " + element.type.name)
+                    .size(1, 1)
+                    .style('N')
+                    .control('LF')
+                    .text("    Full Name: " + element.data.lastname + ", " + element.data.firstname)
+                    .text("     Birthday: " + element.data.birthday + " - " + element.data.birthplace)
+                    .text("  Nationality: " + element.data.nationality)
+                    .control('LF')
+                    .align('ct')
+
+                printer.qrimage(element.qrdata, {
+                    ec_level: 'M',
+                    type: 'png',
+                    size: 5,
+                    margin: 6
+                }, function (err) {
+                    if (err)
+                        console.log("Error QR print: ", err);
+                }).then(() => {
+                    resolve();
+                });
+            } else {
+                console.log("QR: Empty element...");
+                resolve();
+            }
+        });
+    };
+
+    static printHeader(printer, element) {
+        return new Promise(resolve => {
+            printer.align('ct')
+                .size(2, 3)
+                .style('B')
+                .text(element.eventName);
+            if(element.eventDate && element.eventDate.trim().length>0){
+                printer.size(1, 1)
+                    .control('LF')
+                    .size(1, 2)
+                    .text(element.eventDate);
+            }                    
+            if(element.eventLocation && element.eventLocation.trim().length>0){
+                printer.style('N')
+                    .size(1, 1)
+                    .control('LF')
+                    .size(1, 2)
+                    .text(element.eventLocation);
+            }
+            printer.size(1, 1)
+                   .control('LF');
+            resolve();
+        });
+    };
+
+    static printFooter(printer, element) {
+        return new Promise(resolve => {
+            printer.align('ct')
+                .control('LF')
+                .control('LF')
+                .size(1, 1)
+                .println("__________________________________________")
+                .style('N')
+                .align('lt')
+                .text("    Order: " + element.orderref)
+                .text("    Payment: " + element.payment)
+                .text("    Issued: " + element.created)
+                .align('ct')
+                .control('LF')
+                .style("I")
+                .text(element.subtext)
+                .control('LF')
+                ;
+            resolve();
+        });
+    };
+
+    static endPrint(printer,element){
+        return new Promise(resolve => {
+            try{
+                printer.feed(2);
+                printer.cut();
+                printer.close();
+                
+                console.log("Finished printing ("+printer.adapter.address+":"+printer.adapter.port+")!")
+            }catch(Exception){
+                console.trace("Exception while finish printing ("+printer.adapter.address+":"+printer.adapter.port+"): ",Exception);
+            }
+            resolve();
+        });
+    }
+
+
+    static myPromise(printer,element) {
+        if (element && printer) {
+            switch (element.type) {
+                case 'HEADER':
+                    return Printer.printHeader(printer,element);
+                case 'TICKET':
+                    return Printer.printQRCode(printer,element.ticket);
+                case 'FOOTER':
+                    return Printer.printFooter(printer,element);
+                case 'END':
+                    return Printer.endPrint(printer,element);
+            }
+        } else {
+            console.log("Warn: EUHHH... Empty element ????");
+            return Promise.resolve();
+        }
+    }
+
+
 };
-
-
-
 
 module.exports = Printer;
