@@ -44,14 +44,14 @@ class Socket {
                 ip: payload.ip,
                 socket_id: payload.socket_id
             });
-            console.log(payload.name + ' is now connected. Total devices is now ' + this.devices.length);
+            log(payload.name + ' is now connected. Total devices is now ' + this.devices.length);
         }
     }
     onDisconnect(socket){
         //Check if socket connection exists in devices
         for(var i = 0; i < this.devices.length; i++){
             if(this.devices[i].socket_id == socket.id){
-                console.log(this.devices[i].name + ' is disconnected. Total devices is now ' + this.devices.length);
+                log(this.devices[i].name + ' is disconnected. Total devices is now ' + this.devices.length);
                 this.devices.splice(i,1);
                 break;
             }
@@ -65,7 +65,7 @@ class Socket {
                 callback();
             }
         } catch (err) {
-            console.log("Error decrypting incoming event on server, please verify encryption key.");
+            log("Error decrypting incoming event on server, please verify encryption key.");
             if(typeof callback !== 'undefined'){
                 callback(err);
             }
@@ -80,6 +80,11 @@ class Socket {
     stop(){
         this.socket.close();
     }
+}
+/** centralizes local output... */
+log = function(...message){
+    let timing = new Date().toLocaleString();
+    console.log("["+timing+"]",...message);
 }
 
 module.exports = Socket;

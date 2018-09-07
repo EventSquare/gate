@@ -1,4 +1,4 @@
-const escpos = require('escpos');
+const escpos = require('../lib/escpos');
 
 class Printer {
     constructor() {

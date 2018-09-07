@@ -53,7 +53,7 @@ gate.on('print_order', (event) => {
         case 'Kassa-2':
         case 'Kassa-3':
         case 'Kassa-4':
-            printer.ip = '192.168.1.87';
+            printer.ip = '192.168.1.80';
             break;
         case 'BOXOFFICE-1':
             break;
@@ -64,7 +64,7 @@ gate.on('print_order', (event) => {
         case 'BOXOFFICE-4':
             break;
         case 'EID-XXX':
-            printer.ip = '192.168.1.87';
+            printer.ip = '192.168.1.80';
             break;
         default:
             // TODO...
@@ -88,7 +88,10 @@ let client = new EventSquare.Client({
 });
 
 //Simulate order print after interval
-let doTestPrint = true;//true;
+let doTestPrint = false
+
+
+;//true;
 if (doTestPrint) {
     setTimeout(() => {
         console.log("Client Sending out print order ...-~>");
