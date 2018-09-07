@@ -1,4 +1,5 @@
-const bonjour = require('bonjour')()
+const bonjour = require('bonjour')();
+const log = require('../lib/logger');
 
 let service;
 
@@ -10,7 +11,7 @@ module.exports = {
             port: port
         })
         service.on('error',function(error){
-            console.log(error);
+            log.error(error);
         });
     },
     stop() {

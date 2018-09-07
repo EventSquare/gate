@@ -1,4 +1,5 @@
 const escpos = require('../lib/escpos');
+const log = require('../lib/logger');
 
 class Printer {
     constructor() {
@@ -52,12 +53,12 @@ class Printer {
         try{
             // DO THE PRINTING NOW...
             networkDevice.open(function (err) {
-                console.log("Printing ticket now on '"+ip+":"+port+"'");
+                log.log("Printing ticket now on '"+ip+":"+port+"'");
                 // compress all input into print jobs
                 printContent.reduce(sequencePromises, Promise.resolve());
             });
         }catch(Exception){
-            console.trace("Failed to print : ",Exception);
+            log.trace("Failed to print : ",Exception);
         }
 
     }
@@ -91,12 +92,12 @@ class Printer {
                     margin: 6
                 }, function (err) {
                     if (err)
-                        console.log("Error QR print: ", err);
+                    log.log("Error QR print: ", err);
                 }).then(() => {
                     resolve();
                 });
             } else {
-                console.log("QR: Empty element...");
+                log.log("QR: Empty element...");
                 resolve();
             }
         });
@@ -156,9 +157,9 @@ class Printer {
                 printer.cut();
                 printer.close();
                 
-                console.log("Finished printing ("+printer.adapter.address+":"+printer.adapter.port+")!")
+                log.log("Finished printing ("+printer.adapter.address+":"+printer.adapter.port+")!")
             }catch(Exception){
-                console.trace("Exception while finish printing ("+printer.adapter.address+":"+printer.adapter.port+"): ",Exception);
+                log.trace("Exception while finish printing ("+printer.adapter.address+":"+printer.adapter.port+"): ",Exception);
             }
             resolve();
         });
@@ -178,7 +179,7 @@ class Printer {
                     return Printer.endPrint(printer,element);
             }
         } else {
-            console.log("Warn: EUHHH... Empty element ????");
+            log.warn("Warn: EUHHH... Empty element ????");
             return Promise.resolve();
         }
     }

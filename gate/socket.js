@@ -1,5 +1,6 @@
 const io = require('socket.io');
 const Utils = require('../lib/utils');
+const log = require('../lib/logger').log;
 
 class Socket {
     constructor(server,config,handleEventListener){
@@ -80,11 +81,6 @@ class Socket {
     stop(){
         this.socket.close();
     }
-}
-/** centralizes local output... */
-log = function(...message){
-    let timing = new Date().toLocaleString();
-    console.log("["+timing+"]",...message);
 }
 
 module.exports = Socket;

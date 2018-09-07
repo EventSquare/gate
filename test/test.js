@@ -1,6 +1,7 @@
 require('dotenv').config()
 const path = require('path');
-const EventSquare = require('../gate.js');
+const EventSquare = require('../gate.js'); 
+const log = require('../lib/logger');
 
 //Start Gate Server
 const gate = new EventSquare.Gate({
@@ -22,7 +23,7 @@ gate.start();
 
 //Listen for incoming EID reads from EID-1 and forward to BOXOFFICE-1
 gate.on('eid_read', (event) => {
-    console.log("GOT EID !!", event.data);
+    log.log("GOT EID !!", event.data);
     switch (event.name) {
         case 'EID-Reader-1':
         case 'EID-Reader-2':
@@ -31,7 +32,7 @@ gate.on('eid_read', (event) => {
         case 'EID-Reader-5':
         case 'EID-XXX':
             //gate.forward(['BOXOFFICE-1'], event);
-            console.log("Forwarding...");
+            log.log("Forwarding...");
             gate.forward(['Kassa-1'], event);
             break;
         default:
@@ -41,7 +42,7 @@ gate.on('eid_read', (event) => {
 
 // Printing
 gate.on('print_order', (event) => {
-    console.log("Printing order for ", event.name, " - order data ", event.data);
+    log.log("Printing order for ", event.name, " - order data ", event.data);
     // TODO REPLACE
     printer = {
         ip: '127.0.0.1',
@@ -75,7 +76,7 @@ gate.on('print_order', (event) => {
 
 //Discover gates
 EventSquare.Client.discover(2500, (gates) => {
-    //console.log(gates);
+    //log.log(gates);
 });
 
 //Start EID client 
@@ -94,7 +95,7 @@ let doTestPrint = false
 ;//true;
 if (doTestPrint) {
     setTimeout(() => {
-        console.log("Client Sending out print order ...-~>");
+        log.log("Client Sending out print order ...-~>");
         client.emit('print_order',
             {
                 "uuid": "9253b080-b148-11e8-9a43-47a139335f4e",

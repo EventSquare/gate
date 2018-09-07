@@ -4,6 +4,7 @@ const ip = require('ip');
 const macaddress = require('macaddress');
 const moment = require('moment-timezone');
 const uuidv4 = require('uuid/v4');
+const log = require('../lib/logger');
 
 require('dotenv').config()
 const DB = require('../lib/db')
@@ -37,7 +38,7 @@ class Sync {
     }    
     start(){
         if(!this.config.scantoken){
-            console.warn('No scantoken provided, not starting sync service.')
+            log.warn('No scantoken provided, not starting sync service.')
             return;
         }
         //Start Authentication + interval
@@ -60,7 +61,7 @@ class Sync {
         if(this.authenticating) return;
         //Check macAddress
         if(!this.macAddress){
-            console.warn('Macaddress is not available.');
+            log.warn('Macaddress is not available.');
         }
         this.authenticating = true;
         axios.request(this.config.api_endpoint + '/scan/auth', {
@@ -91,7 +92,7 @@ class Sync {
         }.bind(this))
         .catch(function (error) {
             this.authenticating = false;
-            console.log('Unable to authenticate.')
+            log.log('Unable to authenticate.')
         }.bind(this));
     }
     sync() {
@@ -159,11 +160,11 @@ class Sync {
             }.bind(this))
             .catch(function (error) {
                 this.syncing = false;
-                console.log(error);
+                log.log(error);
             }.bind(this));
 
         }, error => {
-            console.warn(error);
+            log.warn(error);
         });
 
     }
@@ -185,7 +186,7 @@ class Sync {
                 };
             })
         }, error => {
-            console.warn(error);
+            log.warn(error);
         });
     }
     processShows(shows) {
@@ -207,7 +208,7 @@ class Sync {
                 };
             })
         }, error => {
-            console.warn(error);
+            log.warn(error);
         });
     }
     processTickets(tickets) {
@@ -255,7 +256,7 @@ class Sync {
                 }
             })
         }, error => {
-            console.warn(error);
+            log.warn(error);
         });
     }
     processOrders(orders) {
@@ -273,7 +274,7 @@ class Sync {
                 }
             });
         }, error => {
-            console.warn(error);
+            log.warn(error);
         });
     }
     processPockets(pockets) {
@@ -288,7 +289,7 @@ class Sync {
                 }
             });
         }, error => {
-            console.warn(error);
+            log.warn(error);
         });
     }
     processCustomers(customers) {
@@ -306,7 +307,7 @@ class Sync {
                 }
             });
         }, error => {
-            console.warn(error);
+            log.warn(error);
         });
     }
     
@@ -320,7 +321,7 @@ class Sync {
                 db.delete(allScans);
             })
         }, error => {
-            console.warn(error);
+            log.warn(error);
         });
     }
 }

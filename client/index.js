@@ -2,6 +2,7 @@ const io = require('socket.io-client');
 const bonjour = require('bonjour');
 const ip = require('ip');
 const Utils = require('../lib/utils');
+const log = require('../lib/logger');
 
 class Client {
     constructor(newConfig){
@@ -32,19 +33,19 @@ class Client {
     validateConfigOrDie(){
         let valid = true;
         if(!this.config.encryption_key){
-            console.error("The config property 'encryption_key' is required when starting a Client.");
+            log.error("The config property 'encryption_key' is required when starting a Client.");
             valid = false;
         }
         if(!this.config.host){
-            console.error("The config property 'host' is required when starting a Client.");
+            log.error("The config property 'host' is required when starting a Client.");
             valid = false;
         }
         if(!this.config.name){
-            console.error("The config property 'name' is required when starting a Client.");
+            log.error("The config property 'name' is required when starting a Client.");
             valid = false;
         }
         if(!this.config.port){
-            console.error("The config property 'port' is required when starting a Client.");
+            log.error("The config property 'port' is required when starting a Client.");
             valid = false;
         }
         if(!valid) process.exit(1);
@@ -64,7 +65,7 @@ class Client {
     emit(event,data,callback){
 
         if(!this.connected){
-            console.log('No connection available when emitting');
+            log.log('No connection available when emitting');
             if(typeof callback !== 'undefined'){
                 callback('no_connection');
             }
@@ -85,7 +86,7 @@ class Client {
                 callback(err);
             }
             if(err){
-                console.log('There was a problem emitting the ' + event);
+                log.log('There was a problem emitting the ' + event);
             }
         }.bind(this));
 
@@ -93,14 +94,14 @@ class Client {
             if(typeof callback !== 'undefined'){
                 callback('emit_timeout');
             }
-            console.log('There was a problem emitting the ' + event);
+            log.log('There was a problem emitting the ' + event);
         }.bind(this),2500);
     }
     onConnect(socket){
         this.connected = true;
         this.handShake();
         //socket.join(this.config.name);
-        console.log('Connected to gate');
+        log.log('Connected to gate');
         this.handleEventListener('connect');
     }
     onEvent(payload){
@@ -108,12 +109,12 @@ class Client {
             var data = Utils.decrypt(payload,this.config.encryption_key);
             this.handleEventListener(data.event,data);
         } catch (err) {
-            console.log("Error decrypting incoming event on client, please verify encryption key.");
+            log.log("Error decrypting incoming event on client, please verify encryption key.");
         }
     }
     onDisconnect(socket){
         this.connected = false;
-        console.log('Disconnected from gate');
+        log.log('Disconnected from gate');
         this.handleEventListener('disconnect');
     }
     handShake() {

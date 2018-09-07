@@ -3,7 +3,8 @@ const path = require("path")
 const moment = require('moment-timezone');
 const uuidv4 = require('uuid/v4');
 
-const DB = require('../lib/db')
+const DB = require('../lib/db');
+const log = require('../lib/logger');
 
 class Router {
     constructor(app,config,sync){
@@ -27,13 +28,13 @@ class Router {
                             logged_at: new Date()
                         });
                     });
-                    //console.log('Received ' + req.query.count + ' ' + req.params.type + ' from ' + req.query.cid);
+                    //log.log('Received ' + req.query.count + ' ' + req.params.type + ' from ' + req.query.cid);
                     res.sendStatus(200);
                 } catch (e) {
-                    console.log(error)
+                    log.error(error)
                 }
             },function(error){
-                console.log(error)
+                log.error(error)
             });
         });   
         
@@ -49,7 +50,7 @@ class Router {
                     total_delta: total_delta
                 });
             },function(error){
-                console.log(error);
+                log.error(error);
                 res.sendStatus(500);
             });
         }.bind(this));
@@ -63,7 +64,7 @@ class Router {
                 });
                 return;
             },function(error){
-                console.log(error);
+                log.error(error);
                 res.sendStatus(500);
             });
         }.bind(this));
@@ -123,7 +124,7 @@ class Router {
                     types: types
                 });
             }, error => {
-                console.warn(error);
+                log.warn(error);
                 res.send(500);
             });
             
@@ -163,7 +164,7 @@ class Router {
                     tickets: allTickets.sorted('barcode').slice(0,100)
                 });
             },function(error){
-                console.log(error);
+                log.log(error);
                 res.sendStatus(500);
             });
         }.bind(this));
@@ -185,7 +186,7 @@ class Router {
                     pockets: pockets
                 });
             }, error => {
-                console.warn(error);
+                log.warn(error);
                 res.send(500);
             });
             
@@ -209,7 +210,7 @@ class Router {
                     pockets: pockets
                 });
             }, error => {
-                console.warn(error);
+                log.warn(error);
                 res.send(500);
             });
             
@@ -228,7 +229,7 @@ class Router {
                 });
                 res.sendStatus(200);
             }, error => {
-                console.warn(error);
+                log.warn(error);
                 res.send(500);
             });
         }.bind(this));
@@ -276,7 +277,7 @@ class Router {
                     tickets: tickets
                 });
             }, error => {
-                console.warn(error);
+                log.warn(error);
                 res.send(500);
             });
             
@@ -284,7 +285,7 @@ class Router {
 
         //Reset all tickets and scan information
         this.app.get('/api/resetcounts', function(req, res){
-            //console.log('Resetting counters');
+            //log.log('Resetting counters');
             DB.open(this.config.storage_path, db => {
                 db.write(() => {
                     let allCounts = db.objects('Count');
@@ -292,14 +293,14 @@ class Router {
                 })
                 res.sendStatus(200);
             }, error => {
-                console.warn(error);
+                log.warn(error);
             });
             
         }.bind(this));
 
         //Reset all tickets and scan information
         this.app.get('/api/reset', function(req, res){
-            //console.log('Resetting tickets, scans and last sync time');
+            //log.log('Resetting tickets, scans and last sync time');
             this.sync.reset();
             res.sendStatus(200);
         }.bind(this));

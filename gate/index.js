@@ -7,6 +7,7 @@ const Socket = require('./socket');
 const Sync = require('./sync');
 const Utils = require('../lib/utils');
 const Printer = require('./print');
+const log = require('../lib/logger');
 
 class Gate {
     constructor(newConfig){
@@ -45,11 +46,11 @@ class Gate {
     validateConfigOrDie(){
         let valid = true;
         if(!this.config.name){
-            console.error("The config property 'name' is required when starting a Gate.");
+            log.error("The config property 'name' is required when starting a Gate.");
             valid = false;
         }
         if(!this.config.storage_path){
-            console.error("The config property 'storage_path' is required when starting a Gate.");
+            log.error("The config property 'storage_path' is required when starting a Gate.");
             valid = false;
         }
         if(!valid) process.exit(1);
@@ -67,11 +68,11 @@ class Gate {
     }
     forward(targets,event){
         if(!targets || targets.constructor !== Array){
-            console.log('Targets arguments is not an Array');
+            log.log('Targets arguments is not an Array');
             return;
         }
         if(!event){
-            console.log('No event specified in emit');
+            log.log('No event specified in emit');
             return;
         }
         //Find socket ids
@@ -130,8 +131,7 @@ class Gate {
             // print on specific printer...
             Printer.print(print_ip, print_port, printData);
         }catch(err){
-            console.log("Printing Error:")
-            console.trace(err);
+            log.trace("Printing Error : ", err);
         }
     }
 
