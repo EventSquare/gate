@@ -4,9 +4,7 @@ const ip = require('ip');
 const macaddress = require('macaddress');
 const moment = require('moment-timezone');
 const uuidv4 = require('uuid/v4');
-
-require('dotenv').config()
-const DB = require('../lib/db')
+const DB = require('../lib/db');
 
 class Sync {
     constructor(config){
@@ -86,6 +84,7 @@ class Sync {
         .then(function (response) {
             this.authenticating = false;
             this.device_id = response.data.device.device_id;
+            this.sync();
             this.processTypes(response.data.scantoken.types);
             this.processShows(response.data.scantoken.shows);
         }.bind(this))
@@ -107,7 +106,7 @@ class Sync {
             console.log('Syncing started')
 
             //Find new scans to sync
-            newScans = db.objects('Scan').filtered('id == null AND scanned_at < $0',moment(this.state.settings.sync_started_at).toDate());
+            newScans = db.objects('Scan').filtered('id == null AND scanned_at < $0',moment().toDate());
             if(newScans.length){
                 for(i=0;i<newScans.length;i++){
                     let ticket = db.objectForPrimaryKey('Ticket', newScans[i].ticket_id);
