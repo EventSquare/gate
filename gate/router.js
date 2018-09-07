@@ -263,8 +263,8 @@ class Router {
                             place: allTickets[i].place ? JSON.parse(allTickets[i].place) : null,
                             price: allTickets[i].price,
                             attendees: allTickets[i].attendees,
-                            type: db.objectForPrimaryKey('Type', allTickets[i].type_id),
-                            show: db.objectForPrimaryKey('Show', allTickets[i].show_id),
+                            type: allTickets[i].type_id ? db.objectForPrimaryKey('Type', allTickets[i].type_id) : null,
+                            show: allTickets[i].show_id ? db.objectForPrimaryKey('Show', allTickets[i].show_id) : null,
                             scans: allScans.length
                         });
                     }

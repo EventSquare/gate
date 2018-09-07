@@ -104,12 +104,14 @@ class Sync {
 
             this.syncing = true;
 
+            console.log('Syncing started')
+
             //Find new scans to sync
-            newScans = db.objects('Scan').filtered('id == null AND scanned_at < $0',moment().toDate());
+            newScans = db.objects('Scan').filtered('id == null AND scanned_at < $0',moment(this.state.settings.sync_started_at).toDate());
             if(newScans.length){
-                for(var i=0;i<newScans.length;i++){
+                for(i=0;i<newScans.length;i++){
                     let ticket = db.objectForPrimaryKey('Ticket', newScans[i].ticket_id);
-                    if(ticket){
+                    if(ticket && ticket.barcode){
                         scans.push({
                             barcode: ticket.barcode,
                             scanned_at: moment(newScans[i].scanned_at).format("YYYY-MM-DD HH:mm:ss"),
@@ -118,6 +120,8 @@ class Sync {
                     }
                 }
             }
+
+            console.log('Pushing ' + scans.length + ' scans');
 
             //Get last UTC sync data       
             let last_sync = moment.utc(this.last_sync).tz(this.config.timezone).format("YYYY-MM-DD HH:mm:ss");
@@ -141,10 +145,15 @@ class Sync {
             .then(function (response) {
                 this.last_sync = response.data.utc;
                 if(response.data.tickets.length){
+                    console.log('Processing tickets')
                     this.processTickets(response.data.tickets);
+                    console.log('Processing orders')
                     this.processOrders(response.data.orders);
+                    console.log('Processing pockets')
                     this.processPockets(response.data.pockets);
+                    console.log('Processing customers')
                     this.processCustomers(response.data.customers);
+                    console.log('Syncing done!');
                 }
 
                 //Remove activity before last
@@ -220,6 +229,7 @@ class Sync {
                 //Sync tickets
                 for(var i=0;i<tickets.length;i++){
                     db.create('Ticket', {
+                        ticket_id: tickets[i].ticket_id ? tickets[i].ticket_id : uuidv4(),
                         id: tickets[i].id.toString(),
                         barcode: tickets[i].barcode,
                         reference: tickets[i].reference,
@@ -230,12 +240,13 @@ class Sync {
                         place: tickets[i].place ? JSON.stringify(tickets[i].place) : null,
                         type_id: tickets[i].relations.type,
                         show_id: tickets[i].relations.show,
-                        pocket_id: tickets[i].relations.pocket
+                        pocket_id: tickets[i].relations.pocket,
+                        reserved: tickets[i].ticket_id ? false : true
                     }, true);
                     if(tickets[i].scans.length){
                         for(var s=0;s<tickets[i].scans.length;s++){
                             scans.push({
-                                ticket_id: tickets[i].id.toString(),
+                                ticket_id: tickets[i].ticket_id,
                                 id: tickets[i].scans[s].id.toString(),
                                 type: tickets[i].scans[s].type,
                                 scanned_at: tickets[i].scans[s].scanned_at
@@ -249,7 +260,7 @@ class Sync {
                         uuid: uuidv4(),
                         id: scans[i].id.toString(),
                         scanned_at: new Date(scans[i].scanned_at.replace(/-/g,"/")),
-                        ticket_id: scans[i].ticket_id.toString(),
+                        ticket_id: scans[i].ticket_id,
                         type: scans[i].type,
                     });
                 }
