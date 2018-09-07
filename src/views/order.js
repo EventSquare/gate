@@ -140,9 +140,7 @@ class Order extends React.Component {
                 <td>{ ticket.place ? ('Section: ' + ticket.place.data.section + ' - ' + 'Row: ' + ticket.place.data.row + ' - ' + 'Place: ' + ticket.place.data.seat) : '' }</td>
                 <td>{ ticket.scans }</td>
                 <td>
-                    { !ticket.scans &&
-                    <button onClick={() => this.scanTicket(ticket.barcode)} className="btn btn-sm btn-primary">Scan</button>
-                    }
+                <button onClick={() => this.scanTicket(ticket.barcode)} className="btn btn-sm btn-primary">Scan</button>
                 </td>
             </tr>
         );

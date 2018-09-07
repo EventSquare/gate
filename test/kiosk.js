@@ -38,7 +38,7 @@ gate.on('scan_ticket',function(event){
         console.log(event.event + ' from ' + event.name + ' - ' + event.data.ticket.barcode);
         //And finally print the label
         EventSquare.Label.print(label_path,{
-            "NAME": event.data.ticket.firstname + " " + event.data.ticket.lastname,
+            "NAME": event.data.ticket.firstname ? (event.data.ticket.firstname + " " + event.data.ticket.lastname) : '',
             "COMPANY": "Dassault Engineering Team",
             "TABLE": "Table 42"
         },printer);

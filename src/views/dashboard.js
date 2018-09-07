@@ -190,10 +190,12 @@ class DashBoard extends React.Component {
                     { this.renderStatus(this.state.ticket.status) }
                     <table className="table">
                         <tbody>
+                            { this.state.ticket.ticket.firstname &&
                             <tr>
                                 <td>Attendee</td>
                                 <td>{ this.state.ticket.ticket.firstname + " " + this.state.ticket.ticket.lastname}</td>
                             </tr>
+                            }
                             { this.state.ticket.customer &&
                             <tr>
                                 <td>Customer</td>
@@ -233,7 +235,9 @@ class DashBoard extends React.Component {
         } else {
             return (
                 <div>
+                    { this.state.ticket.ticket.firstname &&
                     <h3 style={{fontSize: 48}} className="display-4 mb-3">Welcome <b>{ this.state.ticket.ticket.firstname + " " + this.state.ticket.ticket.lastname }</b></h3>
+                    }
                     <h3 className="bg-success text-white p-3 text-center mb-5">{ this.state.ticket.type ? ("TICKET OK : " + this.state.ticket.type.name) : "OK" }</h3>
                 </div>
             )
