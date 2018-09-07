@@ -76,8 +76,8 @@ class App extends React.Component {
                 <div>
                     <NavBar/>
                     <Route exact path="/" render={(props) => <Dashboard {...props} emit={this.emit} />}></Route>
-                    <Route path="/orders/:id" component={Order} />
-                    <Route path="/customers/:id" component={Customer} />
+                    <Route path="/orders/:id" render={(props) => <Order {...props} emit={this.emit} />}></Route>
+                    <Route path="/customers/:id" render={(props) => <Customer {...props} emit={this.emit} />}></Route>
                     <Route exact path="/shows" component={Shows} />
                     <Route path="/shows/:id" component={Show} />
                     <Route exact path="/reports" component={Reports} />

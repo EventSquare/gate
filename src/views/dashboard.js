@@ -1,6 +1,9 @@
 import React from "react";
 const axios = require('axios');
 import Cookies from 'universal-cookie';
+import { Link } from "react-router-dom";
+
+var moment = require('moment-timezone');
 
 const cookies = new Cookies();
 
@@ -33,8 +36,8 @@ class DashBoard extends React.Component {
     }
     onScan(event) {
         if (event.keyCode == 13) {
-            //let barcode = event.target.value;
-            let barcode = "XLNE-AVSD-0044-17DN";
+            let barcode = event.target.value;
+            //let barcode = "XLNE-AVSD-0044-17DN";
             this.setState({
                 query: '',
                 results: null
@@ -183,7 +186,56 @@ class DashBoard extends React.Component {
     renderTicket(){
         if(this.state.ticket){
             return (
-                <div>{ JSON.stringify(this.state.ticket) }</div>
+                <div>
+                    { this.renderStatus(this.state.ticket.status) }
+                    <table className="table">
+                        <tbody>
+                            <tr>
+                                <td>Attendee</td>
+                                <td>{ this.state.ticket.ticket.firstname + " " + this.state.ticket.ticket.lastname}</td>
+                            </tr>
+                            { this.state.ticket.customer &&
+                            <tr>
+                                <td>Customer</td>
+                                <td><Link to={"/customers/" + this.state.ticket.customer.id }>{ this.state.ticket.customer.firstname + " " + this.state.ticket.customer.lastname }</Link></td>
+                            </tr>
+                            }
+                            { this.state.ticket.order &&
+                            <tr>
+                                <td>Order reference</td>
+                                <td><Link to={"/orders/" + this.state.ticket.order.id }>{ this.state.ticket.order.reference }</Link></td>
+                            </tr>
+                            }
+                            { this.state.ticket.order &&
+                                <tr>
+                                    <td>Order placed by</td>
+                                    <td>{ this.state.ticket.order.firstname + " " + this.state.ticket.order.lastname }</td>
+                                </tr>
+                            }
+                            <tr>
+                                <td>Barcode</td>
+                                <td>{ this.state.ticket.ticket.barcode}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            )
+        }
+    }
+    renderStatus(status){
+        if(status == "already_scanned"){
+            return (
+                <div className="alert alert-danger mb-4" role="alert">
+                    <h4 className="alert-heading">This ticket was already scanned.</h4>
+                    <p className="m-0">Please check: this ticket was already scanned on { moment(this.state.ticket.scans[0].scanned_at).format("YYYY-MM-DD HH:mm:ss") }</p>
+                </div>
+            )
+        } else {
+            return (
+                <div>
+                    <h3 style={{fontSize: 48}} className="display-4 mb-3">Welcome <b>{ this.state.ticket.ticket.firstname + " " + this.state.ticket.ticket.lastname }</b></h3>
+                    <h3 className="bg-success text-white p-3 text-center mb-5">{ this.state.ticket.type ? ("TICKET OK : " + this.state.ticket.type.name) : "OK" }</h3>
+                </div>
             )
         }
     }

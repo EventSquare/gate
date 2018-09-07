@@ -151,6 +151,7 @@ class Order extends React.Component {
         axios.post('/api/tickets/' + barcode + '/scan')
         .then(function (response) {
             // handle success
+            this.props.emit('scan_ticket',response.data);
             this.fetchPockets();
         }.bind(this))
         .catch(function (error) {
