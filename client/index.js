@@ -7,10 +7,10 @@ class Client {
         //Initialize Config
         this.config = {
             encryption_key: null,
-            host: 'localhost',
+            host: null,
             name: null,
             device: 'unknown',
-            port: '3000'
+            port: null
         }
         //Update Configuration
         this.config = Object.assign(this.config, newConfig);
@@ -34,22 +34,14 @@ class Client {
             console.error("The config property 'encryption_key' is required when starting a Client.");
             valid = false;
         }
-        if(!this.config.host){
-            console.error("The config property 'host' is required when starting a Client.");
-            valid = false;
-        }
         if(!this.config.name){
             console.error("The config property 'name' is required when starting a Client.");
-            valid = false;
-        }
-        if(!this.config.port){
-            console.error("The config property 'port' is required when starting a Client.");
             valid = false;
         }
         if(!valid) process.exit(1);
     }
     connect(){
-        this.socket = io("http://"+this.config.host+":"+this.config.port);
+        this.socket = io();
         this.socket.on('connect', this.onConnect);
         this.socket.on('event', this.onEvent);
         this.socket.on('disconnect', this.onDisconnect);
