@@ -1,5 +1,4 @@
 const bonjour = require('bonjour')()
-
 let service;
 
 module.exports = {

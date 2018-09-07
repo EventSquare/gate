@@ -14,7 +14,10 @@ class Router {
         
         //Static folders
         this.app.use('/dist', express.static(path.join(__dirname, '../dist')));
+        this.app.use(express.json())
 
+        //Body parser
+        
         //Log Counts
         this.app.get('/count/:type', function(req, res){
             DB.open(this.config.storage_path, db => {
@@ -216,17 +219,70 @@ class Router {
         }.bind(this));
 
         //Scan ticket
-        this.app.post('/api/tickets/:id/scan', function(req, res){
+        this.app.post('/api/tickets/:barcode/scan', function(req, res){
+            let barcode = req.params.barcode;
             DB.open(this.config.storage_path, db => {
-                db.write(() => {
-                    db.create('Scan', {
-                        uuid: uuidv4(),
-                        scanned_at: moment().toDate(),
-                        ticket_id: req.params.id,
-                        type: 'IN', //needs option in scanner later
+                let ticket = db.objects('Ticket').filtered("barcode = $0",barcode)[0];
+                if(!ticket){
+                    res.sendStatus(404);
+                    return;
+                }
+                //Fetch ticket information
+                let ticketData = {
+                    status: 'allowed',
+                    ticket: ticket,
+                    type: null,
+                    show: null,
+                    pocket: null,
+                    order: null,
+                    customer: null,
+                    scans: []
+                }
+                //Find Type
+                if(ticket.type_id){
+                    let type = db.objectForPrimaryKey('Type', ticket.type_id);
+                    if(type) ticketData.type = type;
+                }
+                //Find Show
+                if(ticket.show_id){
+                    let show = db.objectForPrimaryKey('Show', ticket.show_id);
+                    if(show) ticketData.show = show;
+                }
+                //Find Pocket
+                if(ticket.pocket_id){
+                    let pocket = db.objectForPrimaryKey('Pocket', ticket.pocket_id);
+                    if(pocket) ticketData.pocket = pocket;
+                }
+                //Find customer
+                if(ticketData.pocket && ticketData.pocket.customer_id){
+                    let customer = db.objectForPrimaryKey('Customer', ticketData.pocket.customer_id);
+                    if(customer) ticketData.customer = customer;
+                }
+                //Find order
+                if(ticketData.pocket && ticketData.pocket.order_id){
+                    let order = db.objectForPrimaryKey('Order', ticketData.pocket.order_id);
+                    if(order) ticketData.order = order;
+                }
+                //Find scans
+                let scans = db.objects('Scan').filtered('ticket_id = "' + ticketData.ticket.ticket_id + '"');
+                if(scans.length) ticketData.scans = scans;
+
+                //Check if already scanned
+                if(ticketData.scans.length > 0){
+                    ticketData.status = 'already_scanned';
+                } else {
+                    //Save scan
+                    db.write(() => {
+                        db.create('Scan', {
+                            uuid: uuidv4(),
+                            scanned_at: moment().toDate(),
+                            ticket_id: ticketData.ticket.ticket_id,
+                            type: 'IN'
+                        });
                     });
-                });
-                res.sendStatus(200);
+                }
+                //Add scan
+                res.send(ticketData);
             }, error => {
                 console.warn(error);
                 res.send(500);
@@ -254,7 +310,7 @@ class Router {
                 if(allTickets.length > 0){
                     for(var i = 0; i < allTickets.length; i++){
                         //Get scans
-                        let allScans = db.objects('Scan').filtered("ticket_id = '" + allTickets[i].id + "'");
+                        let allScans = db.objects('Scan').filtered("ticket_id = '" + allTickets[i].ticket_id + "'");
                         tickets.push({
                             id: allTickets[i].id,
                             barcode: allTickets[i].barcode,
@@ -278,21 +334,6 @@ class Router {
             }, error => {
                 console.warn(error);
                 res.send(500);
-            });
-            
-        }.bind(this));
-
-        //Reset all tickets and scan information
-        this.app.get('/api/resetcounts', function(req, res){
-            //console.log('Resetting counters');
-            DB.open(this.config.storage_path, db => {
-                db.write(() => {
-                    let allCounts = db.objects('Count');
-                    db.delete(allCounts);
-                })
-                res.sendStatus(200);
-            }, error => {
-                console.warn(error);
             });
             
         }.bind(this));

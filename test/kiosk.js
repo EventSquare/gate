@@ -12,10 +12,16 @@ const gate = new EventSquare.Gate({
     scantoken: process.env.SCANTOKEN,
     storage_path: path.join(__dirname + '/../storage'),
     timezone: process.env.TIMEZONE,
-    eventName: "Belgian Air Force Days",
-    eventLocation: "Air Base Kleine-Brogel",
-    eventDate: "7-8-9 September 2018",
-    footerline: '~~ Powered by EventSquare ~~',
+    eventName: process.env.EVENT_NAME,
+    eventLocation: process.env.EVENT_VENUE,
+    eventDate: process.env.EVENT_DATE,
+    footerline: process.env.TICKET_FOOTER
+});
+
+gate.on('scan_ticket',function(event){
+    //Find table number by barcode
+    console.log(event.event + ' from ' + event.name + ' - ' + event.data.ticket.barcode);
+    //Switch printer
 });
 
 gate.start();

@@ -23,7 +23,7 @@ class Sync {
         //Get network information
         this.ip = ip.address();
         this.getMacAddress();
-        //this.reset(); // Reset on boot
+        this.reset(); // Reset on boot
 
     }
     getMacAddress(){
@@ -108,7 +108,7 @@ class Sync {
             //Find new scans to sync
             newScans = db.objects('Scan').filtered('id == null AND scanned_at < $0',moment().toDate());
             if(newScans.length){
-                for(i=0;i<newScans.length;i++){
+                for(var i=0;i<newScans.length;i++){
                     let ticket = db.objectForPrimaryKey('Ticket', newScans[i].ticket_id);
                     if(ticket && ticket.barcode){
                         scans.push({
@@ -119,6 +119,8 @@ class Sync {
                     }
                 }
             }
+
+            scans = [];
 
             console.log('Pushing ' + scans.length + ' scans');
 
@@ -324,11 +326,22 @@ class Sync {
         this.last_sync = "2017-01-01 00:00:00";
         DB.open(this.config.storage_path, db => {
             db.write(() => {
+                let allOrders = db.objects('Order');
+                db.delete(allOrders);
+                let allCustomers = db.objects('Customer');
+                db.delete(allCustomers);
+                let allPockets = db.objects('Pocket');
+                db.delete(allPockets);
+                let allTypes = db.objects('Type');
+                db.delete(allTypes);
+                let allShows = db.objects('Show');
+                db.delete(allShows);
                 let allTickets = db.objects('Ticket');
                 db.delete(allTickets);
                 let allScans= db.objects('Scan');
                 db.delete(allScans);
             })
+            console.log('Reset all data');
         }, error => {
             console.warn(error);
         });

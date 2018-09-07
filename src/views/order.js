@@ -141,14 +141,14 @@ class Order extends React.Component {
                 <td>{ ticket.scans }</td>
                 <td>
                     { !ticket.scans &&
-                    <button onClick={() => this.scanTicket(ticket.id)} className="btn btn-sm btn-primary">Scan</button>
+                    <button onClick={() => this.scanTicket(ticket.barcode)} className="btn btn-sm btn-primary">Scan</button>
                     }
                 </td>
             </tr>
         );
     }
-    scanTicket(ticket_id){
-        axios.post('/api/tickets/' + ticket_id + '/scan')
+    scanTicket(barcode){
+        axios.post('/api/tickets/' + barcode + '/scan')
         .then(function (response) {
             // handle success
             this.fetchPockets();

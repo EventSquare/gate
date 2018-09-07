@@ -74,8 +74,8 @@ gate.on('print_order', (event) => {
 });
 
 //Discover gates
-EventSquare.Client.discover(2500, (gates) => {
-    //console.log(gates);
+EventSquare.Discover(2500, (gates) => {
+    console.log(gates);
 });
 
 //Start EID client 

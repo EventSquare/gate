@@ -5,22 +5,23 @@
     "main": "gate.js",
     "dependencies": {
         "axios": "^0.18.0",
+        "body-parser": "^1.18.3",
         "bonjour": "^3.5.0",
         "dotenv": "^6.0.0",
         "express": "^4.16.3",
+        "get-pixels": "*",
+        "iconv-lite": "*",
         "ip": "^1.1.5",
         "macaddress": "^0.2.9",
         "moment-timezone": "^0.5.21",
+        "mutable-buffer": "^2.0.3",
+        "qr-image": "*",
         "react-router-dom": "^4.3.1",
         "realm": "^2.15.3",
         "socket.io": "^2.1.1",
         "uuidv4": "^1.0.1",
         "vue": "^2.5.17",
-        "vue-router": "^3.0.1",
-        "get-pixels": "*",
-        "iconv-lite": "*",
-        "mutable-buffer": "^2.0.3",
-        "qr-image": "*"
+        "vue-router": "^3.0.1"
     },
     "babel": {
         "presets": [
@@ -36,18 +37,19 @@
         "babel-preset-react": "^6.24.1",
         "bootstrap": "^4.1.3",
         "css-loader": "^1.0.0",
+        "mocha": "*",
         "node-sass": "^4.9.2",
         "react": "^16.4.2",
         "react-dom": "^16.4.2",
         "sass-loader": "^7.1.0",
         "style-loader": "^0.21.0",
+        "universal-cookie": "^3.0.4",
         "vue-loader": "^15.3.0",
         "vue-style-loader": "^4.1.1",
         "vue-template-compiler": "^2.5.17",
         "webpack": "^4.16.5",
         "webpack-cli": "^3.1.0",
-        "webpack-dev-server": "^3.1.5",
-        "mocha": "*"
+        "webpack-dev-server": "^3.1.5"
     },
     "repository": {
         "type": "git",

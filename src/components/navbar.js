@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 class NavBar extends React.Component {
     constructor(props) {
         super(props);
+        //this.logOut = this.logOut.bind(this);
     };
     componentDidMount() {
         
@@ -30,6 +31,9 @@ class NavBar extends React.Component {
                             {/* <li className="nav-item">
                                 <Link className="nav-link" to="/reports">Reports</Link>
                             </li> */}
+                            <li className="nav-item">
+                                <Link className="nav-link" to="/logout">Logout</Link>
+                            </li>
                         </ul>
                     </div>
                 </div>

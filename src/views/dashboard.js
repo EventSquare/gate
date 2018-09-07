@@ -1,14 +1,20 @@
 import React from "react";
 const axios = require('axios');
+import Cookies from 'universal-cookie';
+
+const cookies = new Cookies();
 
 class DashBoard extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
             query: '',
-            results: null
+            results: null,
+            ticket: null,
+            kiosk: cookies.get('kiosk') || null
         }
         this.onSearch = this.onSearch.bind(this);
+        this.onScan = this.onScan.bind(this);
         this.searchTimeout = null;
     };
     componentDidMount() {
@@ -16,6 +22,7 @@ class DashBoard extends React.Component {
     }
     onSearch(event) {
         this.setState({
+            ticket: null,
             query: event.target.value
         },function(){
             clearTimeout(this.searchTimeout);
@@ -23,6 +30,31 @@ class DashBoard extends React.Component {
                 this.fetchSearch();
             }.bind(this),300);
         }.bind(this));
+    }
+    onScan(event) {
+        if (event.keyCode == 13) {
+            //let barcode = event.target.value;
+            let barcode = "XLNE-AVSD-0044-17DN";
+            this.setState({
+                query: '',
+                results: null
+            });
+            axios.post('/api/tickets/' + barcode + '/scan')
+            .then(function (response) {
+                // handle success
+                this.setState({
+                    ticket: response.data
+                });
+                this.props.emit('scan_ticket',response.data);
+            }.bind(this))
+            .catch(function (error) {
+                // handle error
+                console.log(error);
+            })
+            .then(function () {
+                // always executed
+            });
+        }
     }
     fetchSearch(){
         if(!this.state.query) {
@@ -141,23 +173,28 @@ class DashBoard extends React.Component {
     }
     ticketsList(tickets){
         const listItems = tickets.map((ticket) =>
-            <tr key={ticket.id}>
+            <tr key={ticket.ticket_id}>
                 <td>{ (ticket.firstname ? ticket.firstname : '') + ' ' + (ticket.lastname ? ticket.lastname : '') }</td>
                 <td>{ ticket.barcode }</td>
             </tr>
         );
         return listItems;
     }
+    renderTicket(){
+        if(this.state.ticket){
+            return (
+                <div>{ JSON.stringify(this.state.ticket) }</div>
+            )
+        }
+    }
     render() {
         return (
             <div id="dashboard-wrapper">
                 <div className="container">
                     <div className="input-group mb-4">
-                        <input onChange={this.onSearch} ref={(input) => { this.searchInput = input; }} autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck="false" className="form-control form-control-lg" value={this.state.query} type="text" placeholder="Search orders, customers and tickets." />
-                        <div className="input-group-append">
-                            <button className="btn btn-primary" type="button" id="button-addon2">Search</button>
-                        </div>
+                        <input onKeyUp={this.onScan} onChange={this.onSearch} ref={(input) => { this.searchInput = input; }} autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck="false" className="form-control form-control-lg" value={this.state.query} type="text" placeholder="Scan ticket, search orders, customers and tickets." />
                     </div>
+                    { this.renderTicket() }
                     { this.renderOrders() }
                     { this.renderCustomers() }
                     { this.renderTickets() }

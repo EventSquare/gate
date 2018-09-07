@@ -74,6 +74,7 @@ class Socket {
     emit(targets,event){
         let hash = Utils.encrypt(event,this.config.encryption_key);
         for(var i = 0; i < targets.length; i++){
+            console.log(targets[i]);
             this.socket.to(targets[i]).emit('event', hash);
         }
     }
