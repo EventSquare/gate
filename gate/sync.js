@@ -23,7 +23,7 @@ class Sync {
         //Get network information
         this.ip = ip.address();
         this.getMacAddress();
-        this.reset(); // Reset on boot
+        //this.reset(); // Reset on boot
 
     }
     getMacAddress(){
@@ -119,8 +119,6 @@ class Sync {
                     }
                 }
             }
-
-            scans = [];
 
             console.log('Pushing ' + scans.length + ' scans');
 
