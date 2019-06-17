@@ -51,7 +51,7 @@ class Socket {
         //Check if socket connection exists in devices
         for(var i = 0; i < this.devices.length; i++){
             if(this.devices[i].socket_id == socket.id){
-                log(this.devices[i].name + ' is disconnected. Total devices is now ' + this.devices.length);
+                log(this.devices[i].name + ' is disconnected. Total devices is now ' + (this.devices.length-1));
                 this.devices.splice(i,1);
                 break;
             }

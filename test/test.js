@@ -10,12 +10,7 @@ const gate = new EventSquare.Gate({
     name: process.env.DEVICE_NAME,
     port: process.env.PORT,
     storage_path: path.join(__dirname + '/../storage'),
-    timezone: process.env.TIMEZONE,
-    // specific
-    eventName: "Belgian Air Force Days",
-    eventLocation: "Air Base Kleine-Brogel",
-    eventDate: "7-8-9 September 2018",
-    footerline: '~~ Powered by EventSquare ~~',
+    timezone: process.env.TIMEZONE
 });
 
 gate.start();
@@ -78,85 +73,86 @@ EventSquare.Discover(2500, (gates) => {
     console.log(gates);
 });
 
-//Start EID client 
-let client = new EventSquare.Client({
-    name: 'EID-XXX',
-    device: 'eid_reader',
-    encryption_key: process.env.ENCRYPTION_KEY,
-    host: 'localhost',
-    port: process.env.PORT
-});
 
-//Simulate order print after interval
-let doTestPrint = false
+// //Start EID client 
+// let client = new EventSquare.Client({
+//     name: 'EID-XXX',
+//     device: 'eid_reader',
+//     encryption_key: process.env.ENCRYPTION_KEY,
+//     host: 'http://localhost',
+//     port: process.env.PORT
+// });
+
+// //Simulate order print after interval
+// let doTestPrint = false
 
 
-;//true;
-if (doTestPrint) {
-    setTimeout(() => {
-        console.log("Client Sending out print order ...-~>");
-        client.emit('print_order',
-            {
-                "uuid": "9253b080-b148-11e8-9a43-47a139335f4e",
-                "reference": "RLXL58920",
-                "total_price": "87.00",
-                "created_at": "2018-09-05 22:16:28",
-                "payment_method": "payconiq",
-                "tickets": [
-                    {
-                        "uuid": "8bd65000-b148-11e8-9a43-47a139335f4e",
-                        "price": 29,
-                        "vat": 21,
-                        "type": {
-                            "id": "758994840588",
-                            "name": "VIP"
-                        },
-                        "show": null,
-                        "data": {
-                            "birthday": "01/06/1984",
-                            "birthplace": "Bonheiden",
-                            "firstname": "Glenn",
-                            "lastname": "Engelen",
-                            "nationality": "Belg"
-                        }
-                    },
-                    {
-                        "uuid": "8bef5640-b148-11e8-9a43-47a139335f4e",
-                        "price": 29,
-                        "vat": 21,
-                        "type": {
-                            "id": "758994840588",
-                            "name": "Vrijdag"
-                        },
-                        "show": null,
-                        "data": {
-                            "birthday": "01/06/1984",
-                            "birthplace": "Bonheiden",
-                            "firstname": "Glenn",
-                            "lastname": "Engelen",
-                            "nationality": "Belg"
-                        }
-                    },
-                    {
-                        "uuid": "8c0416c0-b148-11e8-9a43-47a139335f4e",
-                        "price": 29,
-                        "vat": 21,
-                        "type": {
-                            "id": "758994840588",
-                            "name": "Saturday"
-                        },
-                        "show": null,
-                        "data": {
-                            "birthday": "01/06/1984",
-                            "birthplace": "Bonheiden",
-                            "firstname": "Glenn",
-                            "lastname": "Engelen",
-                            "nationality": "Belg"
-                        }
-                    }
-                ]
+// //true;
+// if (doTestPrint) {
+//     setTimeout(() => {
+//         console.log("Client Sending out print order ...-~>");
+//         client.emit('print_order',
+//             {
+//                 "uuid": "9253b080-b148-11e8-9a43-47a139335f4e",
+//                 "reference": "RLXL58920",
+//                 "total_price": "87.00",
+//                 "created_at": "2018-09-05 22:16:28",
+//                 "payment_method": "payconiq",
+//                 "tickets": [
+//                     {
+//                         "uuid": "8bd65000-b148-11e8-9a43-47a139335f4e",
+//                         "price": 29,
+//                         "vat": 21,
+//                         "type": {
+//                             "id": "758994840588",
+//                             "name": "VIP"
+//                         },
+//                         "show": null,
+//                         "data": {
+//                             "birthday": "01/06/1984",
+//                             "birthplace": "Bonheiden",
+//                             "firstname": "Glenn",
+//                             "lastname": "Engelen",
+//                             "nationality": "Belg"
+//                         }
+//                     },
+//                     {
+//                         "uuid": "8bef5640-b148-11e8-9a43-47a139335f4e",
+//                         "price": 29,
+//                         "vat": 21,
+//                         "type": {
+//                             "id": "758994840588",
+//                             "name": "Vrijdag"
+//                         },
+//                         "show": null,
+//                         "data": {
+//                             "birthday": "01/06/1984",
+//                             "birthplace": "Bonheiden",
+//                             "firstname": "Glenn",
+//                             "lastname": "Engelen",
+//                             "nationality": "Belg"
+//                         }
+//                     },
+//                     {
+//                         "uuid": "8c0416c0-b148-11e8-9a43-47a139335f4e",
+//                         "price": 29,
+//                         "vat": 21,
+//                         "type": {
+//                             "id": "758994840588",
+//                             "name": "Saturday"
+//                         },
+//                         "show": null,
+//                         "data": {
+//                             "birthday": "01/06/1984",
+//                             "birthplace": "Bonheiden",
+//                             "firstname": "Glenn",
+//                             "lastname": "Engelen",
+//                             "nationality": "Belg"
+//                         }
+//                     }
+//                 ]
 
-            });
-    }, 2500);
-}
+//             });
+//     }, 2500);
+// }
 
