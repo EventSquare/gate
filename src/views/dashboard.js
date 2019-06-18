@@ -97,6 +97,8 @@ class DashBoard extends React.Component {
                         <tr>
                         <th scope="col">Referentie</th>
                         <th scope="col">Naam</th>
+                        <th scope="col">Bedrijf</th>
+                        <th scope="col">Uitnodiging</th>
                         <th scope="col">E-mail</th>
                         </tr>
                     </thead>
@@ -118,7 +120,9 @@ class DashBoard extends React.Component {
             <tr key={order.id} onClick={() => this.openOrder(order.id)}>
                 <th scope="row">{ order.reference }</th>
                 <td>{ (order.firstname ? order.firstname : '') + ' ' + (order.lastname ? order.lastname : '') }</td>
-                <td>{ (order.email ? order.email : '') }</td>
+                <td>{ order.company ? order.company : '' }</td>
+                <td>{ order.invitation_reference ? order.invitation_reference : '' }</td>
+                <td>{ order.email ? order.email : '' }</td>
             </tr>
         );
         return listItems;

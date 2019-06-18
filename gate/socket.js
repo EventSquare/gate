@@ -65,6 +65,7 @@ class Socket {
                 callback();
             }
         } catch (err) {
+            console.log(err);
             log("Error decrypting incoming event on server, please verify encryption key.");
             if(typeof callback !== 'undefined'){
                 callback(err);

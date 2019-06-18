@@ -104,7 +104,7 @@ class Customer extends React.Component {
     renderPocket(pocket){
         return (
             <div key={pocket.pocket.id} >
-                <h4 className="mb-3">Pocket {pocket.pocket.id} <span className="badge badge-primary">{pocket.tickets.length}</span></h4>
+                <h4 className="mb-3">Pocket <span className="badge badge-primary">{pocket.tickets.length}</span></h4>
                 <table className="table table-striped table-hover table-sm">
                     <thead>
                         <tr>
@@ -133,6 +133,7 @@ class Customer extends React.Component {
                 <td>{ ticket.scans }</td>
                 <td>
                     <button onClick={() => this.scanTicket(ticket.barcode)} className="btn btn-sm btn-primary">Scan</button>
+                    <button onClick={() => this.printBadge(ticket.barcode)} className="btn btn-sm btn-primary">Badge</button>
                 </td>
             </tr>
         );
@@ -143,6 +144,24 @@ class Customer extends React.Component {
             // handle success
             this.props.emit('scan_ticket',response.data);
             this.fetchPockets();
+        }.bind(this))
+        .catch(function (error) {
+            // handle error
+            alert('error!')
+            console.log(error);
+        })
+        .then(function () {
+            // always executed
+        });
+    }
+    printBadge(barcode){
+        axios.post('/api/tickets/' + barcode + '/badge')
+        .then(function (response) {
+            // handle success
+            this.props.emit('print_badge', {
+                last_barcode: barcode,
+                ticketData: response.data
+            });
         }.bind(this))
         .catch(function (error) {
             // handle error

@@ -6,27 +6,95 @@ class Badges extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            badges: []
+            badges: [],
+            createBadge: false,
+            errorName: false,
+            name: "",
+            company: ""
         }
+        this.closeBadgeForm = this.closeBadgeForm.bind(this);
+        this.openBadgeForm = this.openBadgeForm.bind(this);
+        this.onChange = this.onChange.bind(this);
+        this.saveBadge = this.saveBadge.bind(this);
     };
     componentDidMount() {
         this.loadBadges();
     }
     loadBadges(){
-        // axios.get('/api/shows')
-        // .then(function (response) {
-        //     // handle success
-        //     this.setState({
-        //         shows: Object.values(response.data.shows),
-        //     })
-        // }.bind(this))
-        // .catch(function (error) {
-        //     // handle error
-        //     console.log(error);
-        // })
-        // .then(function () {
-        //     // always executed
-        // });
+        axios.get('/api/badges')
+        .then(function (response) {
+            // handle success
+            this.setState({
+                badges: Object.values(response.data.badges),
+            })
+        }.bind(this))
+        .catch(function (error) {
+            // handle error
+            console.log(error);
+        })
+        .then(function () {
+            // always executed
+        });
+    }
+    openBadgeForm(){
+        this.setState({createBadge: true},function(){
+            this.nameInput.focus(); 
+        });
+    }
+    closeBadgeForm(){
+        this.setState({
+            createBadge: false,
+            errorName: false
+        });
+    }
+    onChange(event) {
+        var property = event.target.name;
+        var value = event.target.value;
+        this.setState({[property]: value});
+    }
+    saveBadge(e){
+        e.preventDefault();
+        if(!this.state.name) {
+            this.setState({
+                errorName: true
+            })
+            return;
+        }
+        axios.post('/api/badges',{
+            name: this.state.name,
+            company: this.state.company
+        })
+        .then(function (response) {
+            // handle success
+            this.loadBadges();
+            this.printBadge({name: this.state.name, company: this.state.company});
+        }.bind(this))
+        .catch(function (error) {
+            // handle error
+            console.log(error);
+        })
+        .then(function () {
+            // always executed
+            this.closeBadgeForm();
+        }.bind(this));
+    }
+    renderBadges() {
+        if(!this.state.badges.length) return;
+        const badgesList = this.state.badges.map((badge) =>
+            <tr key={badge.badge_id}>
+                <td><b>{ badge.name }</b></td>
+                <td>{ badge.company }</td>
+                <td>{ moment(badge.created_at).format("YYYY-MM-DD HH:mm:ss") }</td>
+                <td><button onClick={() => this.printBadge({name: badge.name, company: badge.company})} className="btn btn-sm btn-primary">Print</button></td>
+            </tr>
+        );
+        return badgesList;
+    }
+    printBadge(badge){
+        this.props.emit('print_badge', {
+            name: badge.name,
+            company: badge.company
+        });
     }
     render() {
         return (
@@ -34,29 +102,57 @@ class Badges extends React.Component {
                 <div className="container">
                     <div className="row">
                         <div className="col-sm mb-3">
-                            <h1>Badges</h1>
+                            <div className="clearfix">
+                                <h1 className="float-left">Badges</h1>
+                                <div className="float-right">
+                                    <button onClick={this.openBadgeForm} className="btn btn-primary">Maak badge</button>
+                                </div>
+                            </div>
                             <hr/>
+                            
                         </div>
                     </div>
-                    <button className="btn btn-primary">Maak badge</button>
-                    <button className="btn btn-secondary">Importeren</button>
-                    <input type="text" placeholder="Zoeken" />
+                    {/* <button className="btn btn-primary">Maak badge</button> */}
                     <table className="table table-striped table-bordered table-hover">
                         <thead className="thead-dark">
                             <tr>
                                 <th scope="col">Naam</th>
-                                <th scope="col">Ticket</th>
-                                <th scope="col">Barcode</th>
                                 <th scope="col">Bedrijfsnaam</th>
-                                <th scope="col">Logo</th>
-                                <th scope="col">Tafel</th>
-                                <th scope="col">Acties</th>
+                                <th scope="col">Aangemaakt</th>
+                                <th scope="col"></th>
                             </tr>
                         </thead>
                         <tbody>
-                            
+                            { this.renderBadges() }
                         </tbody>
                     </table>
+                </div>
+                { this.renderBadgeForm() }
+            </div>
+        )
+    }
+    renderBadgeForm() {
+        if(!this.state.createBadge) return;
+        return (
+            <div className="modal-container" >
+                <div className="modal-container-content">
+                    <h3>Nieuwe badge maken</h3>
+                    <hr />
+                    { this.state.errorName &&
+                    <div className="alert alert-warning" role="alert">Je dient een naam in te vullen.</div>
+                    }
+                    <form onSubmit={this.saveBadge}>
+                        <div className="form-group">
+                            <label>Naam</label>
+                            <input name="name" ref={(input) => { this.nameInput = input; }} onChange={this.onChange} value={this.state.name} type="text" className="form-control" placeholder="Naam" />
+                        </div>
+                        <div className="form-group">
+                            <label>Bedrijf</label>
+                            <input name="company" onChange={this.onChange} value={this.state.company} type="text" className="form-control" placeholder="Bedrijfsnaam" />
+                        </div>
+                        <button onClick={this.saveBadge} type="submit" className="btn btn-block btn-primary">Bewaren en afdrukken</button>
+                        <button onClick={this.closeBadgeForm} type="button" className="btn btn-block btn-link">Annuleren</button>
+                    </form>
                 </div>
             </div>
         )

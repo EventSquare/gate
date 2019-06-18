@@ -277,6 +277,8 @@ class Sync {
                         reference: orders[i].reference,
                         firstname: orders[i].firstname,
                         lastname: orders[i].lastname,
+                        company: orders[i].company ? orders[i].company.company : null,
+                        invitation_reference: orders[i].invitation ? orders[i].invitation.reference : null,
                         email: orders[i].email,
                         testmode: !!orders[i].testmode
                     }, true);

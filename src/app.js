@@ -80,7 +80,7 @@ class App extends React.Component {
                     <Route path="/orders/:id" render={(props) => <Order {...props} emit={this.emit} />}></Route>
                     <Route path="/customers/:id" render={(props) => <Customer {...props} emit={this.emit} />}></Route>
                     <Route exact path="/shows" component={Shows} />
-                    <Route exact path="/badges" component={Badges} />
+                    <Route exact path="/badges" render={(props) => <Badges {...props} emit={this.emit} />}/>
                     <Route path="/shows/:id" component={Show} />
                     <Route exact path="/reports" component={Reports} />
                     <Route exact path="/settings" component={Settings} />

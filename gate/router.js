@@ -30,6 +30,40 @@ class Router {
             });
         }.bind(this));
 
+        //Fetch badges
+        this.app.get('/api/badges', function(req, res){
+            DB.open(this.config.storage_path, db => {
+                let allBadges = db.objects('Badge').sorted('created_at',{ascending: true});
+                res.send({
+                    badges: allBadges
+                });
+                return;
+            },function(error){
+                console.log(error);
+                res.sendStatus(500);
+            });
+        }.bind(this));
+
+        //Post badges
+        this.app.post('/api/badges', function(req, res){
+            DB.open(this.config.storage_path, db => {
+                //Save scan
+                db.write(() => {
+                    db.create('Badge', {
+                        badge_id: uuidv4(),
+                        name: req.body.name,
+                        company: req.body.company,
+                        created_at: moment().toDate()
+                    });
+                });
+                //Add scan
+                res.sendStatus(200);
+            }, error => {
+                console.warn(error);
+                res.send(500);
+            });
+        }.bind(this));
+
         //Fetch show
         this.app.get('/api/shows/:id', function(req, res){
             DB.open(this.config.storage_path, db => {
@@ -97,7 +131,6 @@ class Router {
                 let allOrders = db.objects('Order');
                 let allCustomers = db.objects('Customer');
                 let allTickets = db.objects('Ticket');
-
                 let queryWords = req.query.query.split(" ");
 
                 //Remove exceptions
@@ -110,12 +143,10 @@ class Router {
                 }
 
                 //Filter orders
-                
                 for(var i = 0; i < queryWords.length; i++){
-                    //allOrders = allOrders.filtered('((firstname CONTAINS[c] $0 || lastname CONTAINS[c] $0) && (email == null || email == "")) || reference CONTAINS[c] $0',queryWords[0]);
-                    allOrders = allOrders.filtered('firstname CONTAINS[c] $0 || lastname CONTAINS[c] $0 || email CONTAINS[c] $0 || reference CONTAINS[c] $0',queryWords[0]);
+                    allOrders = allOrders.filtered('firstname CONTAINS[c] $0 || lastname CONTAINS[c] $0 || email CONTAINS[c] $0 || company CONTAINS[c] $0 || reference CONTAINS[c] $0 || invitation_reference CONTAINS[c] $0',queryWords[0]);
                     allCustomers = allCustomers.filtered('firstname CONTAINS[c] $0 || lastname CONTAINS[c] $0 || email CONTAINS[c] $0',queryWords[0]);
-                    allTickets = allTickets.filtered('barcode CONTAINS[c] $0',queryWords[0]);
+                    allTickets = allTickets.filtered('barcode CONTAINS[c] $0 || firstname CONTAINS[c] $0 || lastname CONTAINS[c] $0',queryWords[0]);
                 }
                 //Response
                 res.send({

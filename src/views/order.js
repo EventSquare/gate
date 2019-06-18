@@ -1,5 +1,6 @@
 import React from "react";
 const axios = require('axios');
+const Badge = require('../components/badge')
 
 class Order extends React.Component {
     constructor(props) {
@@ -7,8 +8,13 @@ class Order extends React.Component {
         this.state = {
             order: null,
             pockets: [],
-            pocketData: []
+            pocketData: [],
+            badge: false,
+            name: "",
+            company: "",
         }
+        this.openBadge = this.openBadge.bind(this);
+        this.closeBadge = this.closeBadge.bind(this);
     };
     componentDidMount() {
         this.loadOrder();
@@ -62,6 +68,24 @@ class Order extends React.Component {
             // always executed
         });
     }
+    openBadge(ticket){ 
+        var company = null;
+        if(this.state.order.invitation_reference) company = this.state.order.invitation_reference;
+        if(this.state.order.company) company = this.state.order.company;
+        this.setState({
+            badge: true,
+            name: ticket.firstname.trim() + " " + ticket.lastname.trim(),
+            company: company
+        });
+    }
+    closeBadge(){ 
+        this.setState({badge: false});
+    }
+    onChange(name,value){
+        this.setState({
+            [name]: value
+        });
+    }
     renderOrder(){
         if(!this.state.order) return;
         return (
@@ -74,15 +98,25 @@ class Order extends React.Component {
                 </div>
                 
                 <div className="row">
-                    <div className="col-3">
+                    <div className="col-4">
                         { this.state.order.firstname &&
                         <div>
-                            <h3>Details</h3>
+                            <h5 className="mb-3">Details</h5>
                             <table className="table table-bordered">
                                 <tbody>
                                     <tr>
                                         <td>{ this.state.order.firstname + " " + (this.state.order.lastname ? ' ' + this.state.order.lastname : '' )}</td>
                                     </tr>
+                                    { this.state.order.company &&
+                                    <tr>
+                                        <td>{ this.state.order.company }</td>
+                                    </tr>
+                                    }
+                                    { this.state.order.invitation_reference &&
+                                    <tr>
+                                        <td>{ this.state.order.invitation_reference }</td>
+                                    </tr>
+                                    }
                                     { this.state.order.email &&
                                     <tr>
                                         <td>{ this.state.order.email }</td>
@@ -93,7 +127,7 @@ class Order extends React.Component {
                         </div>
                         }
                     </div>
-                    <div className="col-9">
+                    <div className="col-8">
                         { this.renderPockets() }
                     </div>
                 </div>
@@ -112,7 +146,7 @@ class Order extends React.Component {
     renderPocket(pocket){
         return (
             <div key={pocket.pocket.id} >
-                <h4 className="mb-3">Pocket <span className="badge badge-primary">{pocket.tickets.length}</span></h4>
+                <h5 className="mb-3">Pocket <span className="badge badge-primary">{pocket.tickets.length}</span></h5>
                 <table className="table table-striped table-hover table-sm">
                     <thead>
                         <tr>
@@ -140,7 +174,7 @@ class Order extends React.Component {
                 <td>{ ticket.place ? ('Section: ' + ticket.place.data.section + ' - ' + 'Row: ' + ticket.place.data.row + ' - ' + 'Place: ' + ticket.place.data.seat) : '' }</td>
                 <td>{ ticket.scans }</td>
                 <td>
-                <button onClick={() => this.scanTicket(ticket.barcode)} className="btn btn-sm btn-primary">Scan</button>
+                    <button onClick={() => this.scanTicket(ticket.barcode)} className="btn btn-sm btn-primary">Scan</button> <button onClick={() => this.openBadge(ticket)} className="btn btn-sm btn-link">Badge</button>
                 </td>
             </tr>
         );
@@ -149,7 +183,10 @@ class Order extends React.Component {
         axios.post('/api/tickets/' + barcode + '/scan')
         .then(function (response) {
             // handle success
-            this.props.emit('scan_ticket',response.data);
+            this.props.emit('scan', {
+                last_barcode: barcode,
+                ticketData: response.data
+            });
             this.fetchPockets();
         }.bind(this))
         .catch(function (error) {
@@ -165,6 +202,7 @@ class Order extends React.Component {
         return (
             <div className="page-padding">
                 { this.renderOrder() }
+                <Badge onEmit={this.props.emit} onChange={(name,value) => this.onChange(name,value)} onClose={() =>this.closeBadge() } visible={this.state.badge} name={this.state.name} company={this.state.company} />
             </div>
         )
     }
