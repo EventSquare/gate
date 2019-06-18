@@ -340,6 +340,8 @@ class Sync {
                 db.delete(allTickets);
                 let allScans= db.objects('Scan');
                 db.delete(allScans);
+                let allBadges = db.objects('Badge');
+                db.delete(allBadges);
             })
             console.log('Reset all data');
         }, error => {
