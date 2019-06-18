@@ -91,12 +91,12 @@ class DashBoard extends React.Component {
         if(!orders.length) return;
         return (
             <div className="mb-5">
-                <h2 className="mb-3">Orders</h2>
+                <h2 className="mb-3">Bestellingen</h2>
                 <table className="table table-striped table-hover table-sm">
                     <thead>
                         <tr>
-                        <th scope="col">Reference</th>
-                        <th scope="col">Name</th>
+                        <th scope="col">Referentie</th>
+                        <th scope="col">Naam</th>
                         <th scope="col">E-mail</th>
                         </tr>
                     </thead>
@@ -129,11 +129,11 @@ class DashBoard extends React.Component {
         if(!customers.length) return;
         return (
             <div className="mb-5">
-                <h2>Customers</h2>
+                <h2>Klanten</h2>
                 <table className="table table-striped table-hover table-sm">
                     <thead>
                         <tr>
-                        <th scope="col">Name</th>
+                        <th scope="col">Naam</th>
                         <th scope="col">E-mail</th>
                         </tr>
                     </thead>
@@ -163,7 +163,7 @@ class DashBoard extends React.Component {
                 <table className="table table-striped table-hover table-sm">
                     <thead>
                         <tr>
-                        <th scope="col">Name</th>
+                        <th scope="col">Naam</th>
                         <th scope="col">Barcode</th>
                         </tr>
                     </thead>
@@ -247,8 +247,14 @@ class DashBoard extends React.Component {
         return (
             <div id="dashboard-wrapper">
                 <div className="container">
+                    <div className="row">
+                        <div className="col-sm mb-3">
+                            <h1>Front Desk</h1>
+                            <hr/>
+                        </div>
+                    </div>
                     <div className="input-group mb-4">
-                        <input onKeyUp={this.onScan} onChange={this.onSearch} ref={(input) => { this.searchInput = input; }} autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck="false" className="form-control form-control-lg" value={this.state.query} type="text" placeholder="Scan ticket, search orders, customers and tickets." />
+                        <input onKeyUp={this.onScan} onChange={this.onSearch} ref={(input) => { this.searchInput = input; }} autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck="false" className="form-control form-control-lg" value={this.state.query} type="text" placeholder="Scan of zoek tickets, bestellingen en klanten" />
                     </div>
                     { this.renderTicket() }
                     { this.renderOrders() }

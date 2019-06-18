@@ -115,7 +115,7 @@ class Gate {
                 // encrypted...
                 // let encrypted_qr = Utils.encrypt(qrData,this.config.encryption_key);
                 // base64 encoded
-                let encrypted_qr =Buffer.from(JSON.stringify(qrData)).toString('base64');
+                let encrypted_qr = Buffer.from(JSON.stringify(qrData)).toString('base64');
 
                 let ticketData = {
                     uuid: ticket.uuid,
@@ -129,7 +129,7 @@ class Gate {
             
             // print on specific printer...
             Printer.print(print_ip, print_port, printData);
-        }catch(err){
+        } catch(err){
             console.log("Printing Error:")
             console.trace(err);
         }

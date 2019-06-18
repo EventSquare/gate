@@ -26,13 +26,19 @@ class NavBar extends React.Component {
                                 <Link className="nav-link" exact="true" to="/">Front Desk</Link>
                             </li>
                             <li className="nav-item">
-                                <Link className="nav-link" to="/shows">Shows</Link>
+                                <Link className="nav-link" to="/badges">Badges</Link>
                             </li>
                             {/* <li className="nav-item">
-                                <Link className="nav-link" to="/reports">Reports</Link>
+                                <Link className="nav-link" to="/shows">Voorstellingen</Link>
+                            </li>
+                            <li className="nav-item">
+                                <Link className="nav-link" to="/devices">Toestellen</Link>
+                            </li>
+                            <li className="nav-item">
+                                <Link className="nav-link" to="/reports">Rapportage</Link>
                             </li> */}
                             <li className="nav-item">
-                                <Link className="nav-link" to="/logout">Logout</Link>
+                                <Link className="nav-link" to="/logout">Afmelden</Link>
                             </li>
                         </ul>
                     </div>

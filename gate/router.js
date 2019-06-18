@@ -16,47 +16,6 @@ class Router {
         this.app.use('/dist', express.static(path.join(__dirname, '../dist')));
         this.app.use(express.json())
 
-        //Body parser
-        
-        //Log Counts
-        this.app.get('/count/:type', function(req, res){
-            DB.open(this.config.storage_path, db => {
-                try {
-                    db.write(() => {
-                        db.create('Count', {
-                            device:  req.query.cid,
-                            type: req.params.type,
-                            count: parseInt(req.query.count),
-                            logged_at: new Date()
-                        });
-                    });
-                    //console.log('Received ' + req.query.count + ' ' + req.params.type + ' from ' + req.query.cid);
-                    res.sendStatus(200);
-                } catch (e) {
-                    console.log(error)
-                }
-            },function(error){
-                console.log(error)
-            });
-        });   
-        
-        //Fetch count data
-        this.app.get('/api/counts', function(req, res){
-            DB.open(this.config.storage_path, db => {
-                let total_in = db.objects('Count').filtered('type = "in"').sum('count');
-                let total_out = db.objects('Count').filtered('type = "out"').sum('count');
-                let total_delta = total_in - total_out;
-                res.send({
-                    total_in: total_in,
-                    total_out: total_out,
-                    total_delta: total_delta
-                });
-            },function(error){
-                console.log(error);
-                res.sendStatus(500);
-            });
-        }.bind(this));
-
         //Fetch stats data
         this.app.get('/api/shows', function(req, res){
             DB.open(this.config.storage_path, db => {

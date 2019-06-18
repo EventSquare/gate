@@ -68,7 +68,7 @@ class Order extends React.Component {
             <div className="container">
                 <div className="row">
                     <div className="col-sm mb-3">
-                        <h1>Order #{ this.state.order.reference }</h1>
+                        <h1>Bestelling #{ this.state.order.reference }</h1>
                         <hr/>
                     </div>
                 </div>
@@ -112,14 +112,14 @@ class Order extends React.Component {
     renderPocket(pocket){
         return (
             <div key={pocket.pocket.id} >
-                <h4 className="mb-3">Pocket {pocket.pocket.id} <span className="badge badge-primary">{pocket.tickets.length}</span></h4>
+                <h4 className="mb-3">Pocket <span className="badge badge-primary">{pocket.tickets.length}</span></h4>
                 <table className="table table-striped table-hover table-sm">
                     <thead>
                         <tr>
-                            <th scope="col">Name</th>
-                            <th scope="col">Show</th>
+                            <th scope="col">Naam</th>
+                            <th scope="col">Voorstelling</th>
                             <th scope="col">Type</th>
-                            <th scope="col">Place</th>
+                            <th scope="col">Plaats</th>
                             <th scope="col">Scans</th>
                             <th scope="col"></th>
                         </tr>

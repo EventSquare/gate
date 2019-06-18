@@ -18,6 +18,7 @@ const Logout = require('./views/logout');
 const Dashboard = require('./views/dashboard');
 const Order = require('./views/order');
 const Customer = require('./views/customer');
+const Badges = require('./views/badges');
 
 const Shows = require('./views/shows');
 const Show = require('./views/show');
@@ -79,6 +80,7 @@ class App extends React.Component {
                     <Route path="/orders/:id" render={(props) => <Order {...props} emit={this.emit} />}></Route>
                     <Route path="/customers/:id" render={(props) => <Customer {...props} emit={this.emit} />}></Route>
                     <Route exact path="/shows" component={Shows} />
+                    <Route exact path="/badges" component={Badges} />
                     <Route path="/shows/:id" component={Show} />
                     <Route exact path="/reports" component={Reports} />
                     <Route exact path="/settings" component={Settings} />
