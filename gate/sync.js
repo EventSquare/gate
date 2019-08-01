@@ -262,9 +262,10 @@ class Sync {
                     }
                 }
                 //Insert scans
+                console.log(scans.length);
                 for(var i=0;i<scans.length;i++){
-                    let allScans = db.objects('Scan').filtered("id = $0",scans[i].ticket_id);
-                    if(!allScans){
+                    let allScans = db.objects('Scan').filtered("id = $0",scans[i].id);
+                    if(!allScans.length){
                         db.create('Scan', {
                             uuid: uuidv4(),
                             id: scans[i].id.toString(),
