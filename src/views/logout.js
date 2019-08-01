@@ -5,8 +5,9 @@ class Logout extends React.Component {
         super(props);
     };
     componentDidMount() {
-        this.props.logOut();
-        this.props.history.push('login');
+        this.props.logOut(function(){
+            this.props.history.push('login');
+        }.bind(this));
     }
     render() {
         return (

@@ -1,5 +1,6 @@
 import React from "react";
 const axios = require('axios');
+var moment = require('moment-timezone');
 
 class Customer extends React.Component {
     constructor(props) {
@@ -19,7 +20,7 @@ class Customer extends React.Component {
             // handle success
             this.setState({
                 customer: response.data.customer,
-                pockets: Object.values(response.data.pockets),
+                pockets: response.data.pockets,
                 pocketData: []
             },function(){
                 if(this.state.pockets.length){
@@ -104,15 +105,15 @@ class Customer extends React.Component {
     renderPocket(pocket){
         return (
             <div key={pocket.pocket.id} >
-                <h4 className="mb-3">Pocket <span className="badge badge-primary">{pocket.tickets.length}</span></h4>
+                <h5 className="mb-3">Pocket <span className="badge badge-primary">{pocket.tickets.length}</span></h5>
                 <table className="table table-striped table-hover table-sm">
                     <thead>
                         <tr>
-                            <th scope="col">Name</th>
-                            <th scope="col">Show</th>
+                            <th scope="col">Naam</th>
+                            <th scope="col">Voorstelling</th>
                             <th scope="col">Type</th>
-                            <th scope="col">Place</th>
-                            <th scope="col">Scans</th>
+                            <th scope="col">Plaats</th>
+                            <th scope="col">Scan</th>
                             <th scope="col"></th>
                         </tr>
                     </thead>
@@ -125,15 +126,21 @@ class Customer extends React.Component {
     }
     renderTicket(ticket){
         return (
-            <tr key={ticket.id} className={ticket.scans ? "table-success" : ""}>
+            <tr key={ticket.id} className={ticket.scans.length ? "table-success" : ""}>
                 <td>{ (ticket.firstname ? ticket.firstname : '') + ' ' + (ticket.lastname ? ticket.lastname : '') }</td>
                 <td>{ ticket.show ? ticket.show.name : '' }</td>
                 <td>{ ticket.type ? ticket.type.name : '-' }</td>
                 <td>{ ticket.place ? ('Section: ' + ticket.place.data.section + ' - ' + 'Row: ' + ticket.place.data.row + ' - ' + 'Place: ' + ticket.place.data.seat) : '' }</td>
-                <td>{ ticket.scans }</td>
+                <td>{ ticket.scans.length ? moment(ticket.scans[0].scanned_at).format("YYYY-MM-DD HH:mm:ss") : '' }</td>
                 <td>
-                    <button onClick={() => this.scanTicket(ticket.barcode)} className="btn btn-sm btn-primary">Scan</button>
-                    <button onClick={() => this.printBadge(ticket.barcode)} className="btn btn-sm btn-primary">Badge</button>
+                    <div className="dropdown show">
+                        <a className="btn btn-sm btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Acties</a>
+                        <div className="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                            <button onClick={() => this.scanTicket(ticket.barcode)} className="dropdown-item" href="#">Scan</button>
+                            <button onClick={() => this.printTicket(ticket.barcode)} className="dropdown-item" href="#">Afdrukken</button>
+                            {/* <button onClick={() => this.openBadge(ticket)} className="dropdown-item" href="#">Maak badge</button> */}
+                        </div>
+                    </div>
                 </td>
             </tr>
         );
@@ -142,16 +149,17 @@ class Customer extends React.Component {
         axios.post('/api/tickets/' + barcode + '/scan')
         .then(function (response) {
             // handle success
-            this.props.emit('scan_ticket',response.data);
+            this.props.emit('scan', {
+                last_barcode: barcode,
+                ticketData: response.data
+            });
             this.fetchPockets();
         }.bind(this))
         .catch(function (error) {
             // handle error
-            alert('error!')
-            console.log(error);
-        })
-        .then(function () {
-            // always executed
+            if(error.response && error.response.data == 'already_scanned'){
+                alert('Dit ticket is reeds gescanned');
+            }
         });
     }
     printBadge(barcode){

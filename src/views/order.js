@@ -1,6 +1,7 @@
 import React from "react";
 const axios = require('axios');
 const Badge = require('../components/badge')
+var moment = require('moment-timezone');
 
 class Order extends React.Component {
     constructor(props) {
@@ -98,7 +99,7 @@ class Order extends React.Component {
                 </div>
                 
                 <div className="row">
-                    <div className="col-4">
+                    <div className="col">
                         { this.state.order.firstname &&
                         <div>
                             <h5 className="mb-3">Details</h5>
@@ -154,7 +155,7 @@ class Order extends React.Component {
                             <th scope="col">Voorstelling</th>
                             <th scope="col">Type</th>
                             <th scope="col">Plaats</th>
-                            <th scope="col">Scans</th>
+                            <th scope="col">Scan</th>
                             <th scope="col"></th>
                         </tr>
                     </thead>
@@ -167,14 +168,21 @@ class Order extends React.Component {
     }
     renderTicket(ticket){
         return (
-            <tr key={ticket.id} className={ticket.scans ? "table-success" : ""}>
+            <tr key={ticket.id} className={ticket.scans.length ? "table-success" : ""}>
                 <td>{ (ticket.firstname ? ticket.firstname : '') + ' ' + (ticket.lastname ? ticket.lastname : '') }</td>
                 <td>{ ticket.show ? ticket.show.name : '' }</td>
                 <td>{ ticket.type ? ticket.type.name : '-' }</td>
                 <td>{ ticket.place ? ('Section: ' + ticket.place.data.section + ' - ' + 'Row: ' + ticket.place.data.row + ' - ' + 'Place: ' + ticket.place.data.seat) : '' }</td>
-                <td>{ ticket.scans }</td>
+                <td>{ ticket.scans.length ? moment(ticket.scans[0].scanned_at).format("YYYY-MM-DD HH:mm:ss") : '' }</td>
                 <td>
-                    <button onClick={() => this.scanTicket(ticket.barcode)} className="btn btn-sm btn-primary">Scan</button> <button onClick={() => this.openBadge(ticket)} className="btn btn-sm btn-link">Badge</button>
+                    <div className="dropdown show">
+                        <a className="btn btn-sm btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Acties</a>
+                        <div className="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                            <button onClick={() => this.scanTicket(ticket.barcode)} className="dropdown-item" href="#">Scan</button>
+                            <button onClick={() => this.printTicket(ticket.barcode)} className="dropdown-item" href="#">Afdrukken</button>
+                            {/* <button onClick={() => this.openBadge(ticket)} className="dropdown-item" href="#">Maak badge</button> */}
+                        </div>
+                    </div>
                 </td>
             </tr>
         );
@@ -191,11 +199,9 @@ class Order extends React.Component {
         }.bind(this))
         .catch(function (error) {
             // handle error
-            alert('error!')
-            console.log(error);
-        })
-        .then(function () {
-            // always executed
+            if(error.response && error.response.data == 'already_scanned'){
+                alert('Dit ticket is reeds gescanned');
+            }
         });
     }
     render() {

@@ -7,6 +7,7 @@ const Socket = require('./socket');
 const Sync = require('./sync');
 const Utils = require('../lib/utils');
 const Printer = require('./print');
+const DB = require('../lib/db');
 
 class Gate {
     constructor(newConfig){
@@ -15,7 +16,7 @@ class Gate {
             api_endpoint: "https://api.eventsquare.io/1.0",
             bonjour: true,
             encryption_key: null,
-            name: null,
+            name: "EventSquare Gate",
             port: 3000,
             scantoken: null,
             storage_path: null,
@@ -25,14 +26,17 @@ class Gate {
             eventLocation: "Heaven Cloud 5",
             footerline: 'Powered by EventSquare',
         }
+        //Clear events
         this.events = {};
         //Update Configuration
         this.config = Object.assign(this.config, newConfig);
+        //Set database
+        this.db = new DB(this.config.storage_path);
         //Validate Configuration
         this.validateConfigOrDie();
         //Bind callbacks
         this.handleEventListener = this.handleEventListener.bind(this);
-        //Initialize Server
+        //Initialize Server & Express
         this.app = express();
         this.server = http.Server(this.app);
         //Initialize Socket
@@ -44,14 +48,15 @@ class Gate {
     }
     validateConfigOrDie(){
         let valid = true;
-        if(!this.config.name){
-            console.error("The config property 'name' is required when starting a Gate.");
-            valid = false;
-        }
         if(!this.config.storage_path){
             console.error("The config property 'storage_path' is required when starting a Gate.");
             valid = false;
         }
+        //Default settings
+        this.db.initSetting('name','EventSquare Gate');
+        this.db.initSetting('sync',false);
+        this.db.initSetting('last_sync',"2017-01-01 00:00:00");
+    
         if(!valid) process.exit(1);
     }
     start(){

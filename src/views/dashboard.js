@@ -14,10 +14,12 @@ class DashBoard extends React.Component {
             query: '',
             results: null,
             ticket: null,
+            not_found: false,
             kiosk: cookies.get('kiosk') || null
         }
         this.onSearch = this.onSearch.bind(this);
         this.onScan = this.onScan.bind(this);
+        this.resetSearch = this.resetSearch.bind(this);
         this.searchTimeout = null;
     };
     componentDidMount() {
@@ -26,7 +28,8 @@ class DashBoard extends React.Component {
     onSearch(event) {
         this.setState({
             ticket: null,
-            query: event.target.value
+            query: event.target.value,
+            not_found: false
         },function(){
             clearTimeout(this.searchTimeout);
             this.searchTimeout = setTimeout(function(){
@@ -34,12 +37,27 @@ class DashBoard extends React.Component {
             }.bind(this),300);
         }.bind(this));
     }
+    resetSearch() {
+        this.setState({
+            query: '',
+            results: null,
+            ticket: null,
+            not_found: false
+        });
+        this.searchInput.focus();
+    }
     onScan(event) {
+        //Reset search
+        if(event.keyCode == 27) {
+            this.resetSearch();
+            return;
+        }
+        //Scan ticket
         if (event.keyCode == 13) {
             let barcode = event.target.value;
-            //let barcode = "XLNE-AVSD-0044-17DN";
             this.setState({
                 query: '',
+                not_found: false,
                 results: null
             });
             axios.post('/api/tickets/' + barcode + '/scan')
@@ -48,12 +66,16 @@ class DashBoard extends React.Component {
                 this.setState({
                     ticket: response.data
                 });
-                this.props.emit('scan_ticket',response.data);
             }.bind(this))
             .catch(function (error) {
                 // handle error
                 console.log(error);
-            })
+                if(error.response && error.response.status == 404){
+                    this.setState({
+                        not_found: true
+                    });
+                }  
+            }.bind(this))
             .then(function () {
                 // always executed
             });
@@ -110,6 +132,7 @@ class DashBoard extends React.Component {
         );
     }
     openOrder(order_id){
+        if(!order_id) return;
         this.props.history.push('/orders/'+order_id);
     }
     openCustomer(customer_id){
@@ -168,6 +191,7 @@ class DashBoard extends React.Component {
                     <thead>
                         <tr>
                         <th scope="col">Naam</th>
+                        <th scope="col">Type</th>
                         <th scope="col">Barcode</th>
                         </tr>
                     </thead>
@@ -180,8 +204,9 @@ class DashBoard extends React.Component {
     }
     ticketsList(tickets){
         const listItems = tickets.map((ticket) =>
-            <tr key={ticket.ticket_id}>
+            <tr key={ticket.id} onClick={() => this.openOrder(ticket.order_id)}>
                 <td>{ (ticket.firstname ? ticket.firstname : '') + ' ' + (ticket.lastname ? ticket.lastname : '') }</td>
+                <td>{ ticket.type }</td>
                 <td>{ ticket.barcode }</td>
             </tr>
         );
@@ -196,25 +221,25 @@ class DashBoard extends React.Component {
                         <tbody>
                             { this.state.ticket.ticket.firstname &&
                             <tr>
-                                <td>Attendee</td>
+                                <td>Bezoeker</td>
                                 <td>{ this.state.ticket.ticket.firstname + " " + this.state.ticket.ticket.lastname}</td>
                             </tr>
                             }
                             { this.state.ticket.customer &&
                             <tr>
-                                <td>Customer</td>
+                                <td>Klant</td>
                                 <td><Link to={"/customers/" + this.state.ticket.customer.id }>{ this.state.ticket.customer.firstname + " " + this.state.ticket.customer.lastname }</Link></td>
                             </tr>
                             }
                             { this.state.ticket.order &&
                             <tr>
-                                <td>Order reference</td>
+                                <td>Bestelling</td>
                                 <td><Link to={"/orders/" + this.state.ticket.order.id }>{ this.state.ticket.order.reference }</Link></td>
                             </tr>
                             }
                             { this.state.ticket.order &&
                                 <tr>
-                                    <td>Order placed by</td>
+                                    <td>Besteld door</td>
                                     <td>{ this.state.ticket.order.firstname + " " + this.state.ticket.order.lastname }</td>
                                 </tr>
                             }
@@ -231,35 +256,70 @@ class DashBoard extends React.Component {
     renderStatus(status){
         if(status == "already_scanned"){
             return (
-                <div className="alert alert-danger mb-4" role="alert">
-                    <h4 className="alert-heading">This ticket was already scanned.</h4>
-                    <p className="m-0">Please check: this ticket was already scanned on { moment(this.state.ticket.scans[0].scanned_at).format("YYYY-MM-DD HH:mm:ss") }</p>
+                <div>
+                    <div className="mb-4 text-center">
+                        { this.state.ticket.ticket.firstname &&
+                        <h3 style={{fontSize: 48}} className="display-4 mb-1"><b>{ this.state.ticket.ticket.firstname + " " + this.state.ticket.ticket.lastname }</b></h3>
+                        }
+                        <h4><b>{ this.state.ticket.type.name }</b></h4>
+                    </div>
+                    <div className="p-3 mb-5 bg-danger text-white text-center">
+                        <h1>REEDS GESCAND</h1>
+                        <p className="lead mb-0">Dit ticket werd reeds gescand op { moment(this.state.ticket.scans[0].scanned_at).format("YYYY-MM-DD HH:mm:ss") }</p>
+                    </div>
                 </div>
             )
         } else {
             return (
                 <div>
-                    { this.state.ticket.ticket.firstname &&
-                    <h3 style={{fontSize: 48}} className="display-4 mb-3">Welcome <b>{ this.state.ticket.ticket.firstname + " " + this.state.ticket.ticket.lastname }</b></h3>
-                    }
-                    <h3 className="bg-success text-white p-3 text-center mb-5">{ this.state.ticket.type ? ("TICKET OK : " + this.state.ticket.type.name) : "OK" }</h3>
+                    <div className="mb-4 text-center">
+                        { this.state.ticket.ticket.firstname &&
+                        <h3 style={{fontSize: 48}} className="display-4 mb-1"><b>{ this.state.ticket.ticket.firstname + " " + this.state.ticket.ticket.lastname }</b></h3>
+                        }
+                        <h4><b>{ this.state.ticket.type.name }</b></h4>
+                    </div>
+                    <div className="p-3 mb-5 bg-success text-white text-center">
+                        <h1 className="mb-0">OK</h1>
+                    </div>
                 </div>
             )
         }
     }
     render() {
         return (
-            <div id="dashboard-wrapper">
+            <div className="page-padding">
                 <div className="container">
+                    { !this.state.query &&
                     <div className="row">
-                        <div className="col-sm mb-3">
-                            <h1>Front Desk</h1>
-                            <hr/>
+                        <div class="col">
+                            <h1 className="display-4 mb-4">Onthaal</h1>
                         </div>
                     </div>
-                    <div className="input-group mb-4">
-                        <input onKeyUp={this.onScan} onChange={this.onSearch} ref={(input) => { this.searchInput = input; }} autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck="false" className="form-control form-control-lg" value={this.state.query} type="text" placeholder="Scan of zoek tickets, bestellingen en klanten" />
+                    }
+                    <div className="row">
+                        <div className="col">
+                            <div className="form mb-4">
+                                <div className="form-row">
+                                    <div className="col">
+                                        <div className="input-group">
+                                            <input onKeyUp={this.onScan} onChange={this.onSearch} ref={(input) => { this.searchInput = input; }} autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck="false" className="form-control form-control-lg" value={this.state.query} type="text" placeholder="Scan of zoek tickets, bestellingen en klanten" />
+                                        </div>
+                                    </div>
+                                    <div className="col col-3 col-md-2">
+                                        <button onClick={this.resetSearch} className="btn btn-block btn-primary btn-lg">Wis</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+                    { this.state.not_found &&
+                    <div>
+                        <div className="p-3 mb-5 bg-danger text-white text-center">
+                            <h1>NIET GEVONDEN</h1>
+                            <p className="lead mb-0">We kunnen geen ticket vinden met deze barcode.</p>
+                        </div>
+                    </div>
+                    }
                     { this.renderTicket() }
                     { this.renderOrders() }
                     { this.renderCustomers() }

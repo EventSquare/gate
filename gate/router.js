@@ -11,6 +11,9 @@ class Router {
         this.app = app;
         this.config = config;
         this.sync = sync;
+
+        //Set database
+        this.db = new DB(this.config.storage_path);
         
         //Static folders
         this.app.use('/dist', express.static(path.join(__dirname, '../dist')));
@@ -18,7 +21,7 @@ class Router {
 
         //Fetch stats data
         this.app.get('/api/shows', function(req, res){
-            DB.open(this.config.storage_path, db => {
+            this.db.open(db => {
                 let allShows = db.objects('Show').sorted('date_start');
                 res.send({
                     shows: allShows
@@ -30,9 +33,65 @@ class Router {
             });
         }.bind(this));
 
+        //Get scan reports
+        this.app.get('/api/reports', function(req, res){
+            
+            const start = req.query.start;
+            const end = req.query.end;
+
+            //Get last UTC sync data       
+            let startDate = moment.utc(start).tz(this.config.timezone);
+            let endDate = moment.utc(end).tz(this.config.timezone);
+            
+            //Get scans
+            this.db.open(db => {
+
+                //Get all ticket types
+                let allTypes = db.objects('Type').sorted('name');
+                let types = [];
+
+                for(let i = 0; i < allTypes.length; i++){
+                    let allTickets = db.objects('Ticket').filtered('type_id = $0',allTypes[i].id);
+                    let allScans = db.objects('Scan').filtered('type_id = $0 DISTINCT(uuid) AND scanned_at >= $1 AND scanned_at < $2',allTypes[i].id,startDate.toDate(),endDate.toDate());
+                    types.push({
+                        id: allTypes[i].id,
+                        name: allTypes[i].name,
+                        scans: allScans.length,
+                        tickets: allTickets.length
+                    });
+                }
+
+                //Get all clickers
+                let allClickers = db.objects('Clicker').sorted('name');
+                let clickers = [];
+
+                for(let i = 0; i < allClickers.length; i++){
+                    let scansIn = db.objects('Scan').filtered('clicker_id = $0 AND type = "IN" AND scanned_at >= $1 AND scanned_at < $2',allClickers[i].id,startDate.toDate(),endDate.toDate());
+                    let scansOut = db.objects('Scan').filtered('clicker_id = $0 AND type = "OUT" AND scanned_at >= $1 AND scanned_at < $2',allClickers[i].id,startDate.toDate(),endDate.toDate());
+                    clickers.push({
+                        id: allClickers[i].id,
+                        name: allClickers[i].name,
+                        scans: {
+                            in: scansIn.length,
+                            out: scansOut.length
+                        }
+                    });
+                }
+
+                res.send({
+                    types: types,
+                    clickers: clickers
+                });
+                return;
+            },function(error){
+                console.log(error);
+                res.sendStatus(500);
+            });
+        }.bind(this));
+
         //Fetch badges
         this.app.get('/api/badges', function(req, res){
-            DB.open(this.config.storage_path, db => {
+            this.db.open(db => {
                 let allBadges = db.objects('Badge').sorted('created_at',{ascending: true});
                 res.send({
                     badges: allBadges
@@ -46,7 +105,7 @@ class Router {
 
         //Post badges
         this.app.post('/api/badges', function(req, res){
-            DB.open(this.config.storage_path, db => {
+            this.db.open(db => {
                 //Save scan
                 db.write(() => {
                     db.create('Badge', {
@@ -64,9 +123,166 @@ class Router {
             });
         }.bind(this));
 
+        //Login
+        this.app.post('/api/login', function(req, res){
+            this.db.open(db => {
+                //Return user
+                let user = db.objects('User').filtered("username = $0",req.body.username)[0];
+                if(!user){
+                    res.sendStatus(404);
+                    return;
+                }
+                res.send({
+                    user: user
+                });
+            }, error => {
+                res.sendStatus(500);
+            });
+        }.bind(this));
+
+        //Auth
+        this.app.post('/api/auth', function(req, res){
+            this.db.open(db => {
+                //Return user
+                let user = db.objects('User').filtered("uuid = $0",req.body.user_id)[0];
+                if(!user){
+                    res.sendStatus(404);
+                    return;
+                }
+                res.send({
+                    user: user
+                });
+            }, error => {
+                res.sendStatus(500);
+            });
+        }.bind(this));
+
+        //Update user
+        this.app.post('/api/users/:id', function(req, res){
+            this.db.open(db => {
+                //Check if user exists
+                let user = db.objects('User').filtered("uuid = $0",req.params.id)[0];
+                if(!user){
+                    res.status(404);
+                    return;
+                }
+                db.write(() => {
+                    if(req.body.username){
+                        user.username = req.body.username;
+                    }
+                    if(typeof req.body.badges !== 'undefined'){
+                        user.badges = req.body.badges
+                    }
+                    if(typeof req.body.reports !== 'undefined'){
+                        user.reports = req.body.reports
+                    }
+                    if(typeof req.body.settings !== 'undefined'){
+                        user.settings = req.body.settings
+                    }
+                    if(typeof req.body.ticket_printer !== 'undefined'){
+                        if(req.body.ticket_printer){
+                            user.ticket_printer = req.body.ticket_printer
+                        } else {
+                            user.ticket_printer = null
+                        }
+                    }
+                    if(typeof req.body.badge_printer !== 'undefined'){
+                        if(req.body.badge_printer){
+                            user.badge_printer = req.body.badge_printer
+                        } else {
+                            user.badge_printer = null
+                        }
+                    }
+                    res.send({
+                        user: user
+                    });
+                });
+            }, error => {
+                console.log(error);
+                res.sendStatus(500);
+            });
+        }.bind(this));
+
+        //Get users
+        this.app.get('/api/users', function(req, res){
+            this.db.open(db => {
+                //Return user
+                let users = db.objects('User');
+                res.send({
+                    users: Array.from(users)
+                });
+            }, error => {
+                res.sendStatus(500);
+            });
+        }.bind(this));
+
+        //Create a user
+        this.app.post('/api/users', function(req, res){
+            this.db.open(db => {
+                //Check if user already exists
+                let user = db.objects('User').filtered("username = $0",req.body.username)[0];
+                if(user){
+                    res.status(403).send('user_exists');
+                    return;
+                }
+                const user_id = uuidv4();
+                db.write(() => {
+                    let user = db.create('User', {
+                        uuid: user_id,
+                        username: req.body.username
+                    });
+                    res.send({
+                        user: user
+                    });
+                });
+            }, error => {
+                console.log(error);
+                res.sendStatus(500);
+            });
+        }.bind(this));
+
+        //Get clickers
+        this.app.get('/api/clickers', function(req, res){
+            this.db.open(db => {
+                //Return user
+                let clickers = db.objects('Clicker');
+                res.send({
+                    clickers: Array.from(clickers)
+                });
+            }, error => {
+                res.sendStatus(500);
+            });
+        }.bind(this));
+
+        //Create a clicker
+        this.app.post('/api/clickers', function(req, res){
+            this.db.open(db => {
+                //Check if user already exists
+                let clicker = db.objects('Clicker').filtered("id = $0",req.body.id)[0];
+                if(clicker){
+                    res.status(403).send('clicker_exists');
+                    return;
+                }
+                db.write(() => {
+                    let clicker = db.create('Clicker', {
+                        id: req.body.id,
+                        name: req.body.name,
+                        code: req.body.code
+                    });
+                    res.send({
+                        clicker: clicker
+                    });
+                });
+            }, error => {
+                console.log(error);
+                res.sendStatus(500);
+            });
+        }.bind(this));
+        
+
         //Fetch show
         this.app.get('/api/shows/:id', function(req, res){
-            DB.open(this.config.storage_path, db => {
+            this.db.open(db => {
                 let show = db.objectForPrimaryKey('Show', req.params.id);
                 if(!show){
                     res.sendStatus(404);
@@ -120,14 +336,14 @@ class Router {
                 });
             }, error => {
                 console.warn(error);
-                res.send(500);
+                res.sendStatus(500);
             });
             
         }.bind(this));
 
         //Fetch search
         this.app.get('/api/search', function(req, res){
-            DB.open(this.config.storage_path, db => {
+            this.db.open(db => {
                 let allOrders = db.objects('Order');
                 let allCustomers = db.objects('Customer');
                 let allTickets = db.objects('Ticket');
@@ -148,12 +364,38 @@ class Router {
                     allCustomers = allCustomers.filtered('firstname CONTAINS[c] $0 || lastname CONTAINS[c] $0 || email CONTAINS[c] $0',queryWords[0]);
                     allTickets = allTickets.filtered('barcode CONTAINS[c] $0 || firstname CONTAINS[c] $0 || lastname CONTAINS[c] $0',queryWords[0]);
                 }
+                //Process tickets
+                var processedTickets = [];
+                for(var i = 0; i < allTickets.length; i++){
+                    var ticket = {
+                        id: allTickets[i].id,
+                        barcode: allTickets[i].barcode,
+                        firstname: allTickets[i].firstname,
+                        lastname: allTickets[i].lastname,
+                        type: null,
+                        order_id: null
+                    }
+                    let type = db.objectForPrimaryKey('Type', allTickets[i].type_id);
+                    if(type){
+                        ticket.type = type.name
+                    }
+                    if(allTickets[i].pocket_id){
+                        let pocket = db.objectForPrimaryKey('Pocket', allTickets[i].pocket_id);
+                        if(pocket){
+                            let order = db.objectForPrimaryKey('Order', pocket.order_id);
+                            if(order){
+                                ticket.order_id = order.id; 
+                            }
+                        }
+                    }
+                    processedTickets.push(ticket);
+                }
                 //Response
                 res.send({
                     query: req.query.query,
                     orders: allOrders.sorted('firstname').slice(0,100),
                     customers: allCustomers.sorted('firstname').slice(0,100),
-                    tickets: allTickets.sorted('barcode').slice(0,100)
+                    tickets: processedTickets.slice(0,100)
                 });
             },function(error){
                 console.log(error);
@@ -163,7 +405,7 @@ class Router {
 
         //Fetch order
         this.app.get('/api/orders/:id', function(req, res){
-            DB.open(this.config.storage_path, db => {
+            this.db.open(db => {
                 let order = db.objectForPrimaryKey('Order', req.params.id);
                 if(!order){
                     res.sendStatus(404);
@@ -186,7 +428,7 @@ class Router {
 
         //Fetch customer
         this.app.get('/api/customers/:id', function(req, res){
-            DB.open(this.config.storage_path, db => {
+            this.db.open(db => {
 
                 let customer = db.objectForPrimaryKey('Customer', req.params.id);
                 if(!customer){
@@ -199,11 +441,11 @@ class Router {
 
                 res.send({
                     customer: customer,
-                    pockets: pockets
+                    pockets: Array.from(pockets)
                 });
             }, error => {
                 console.warn(error);
-                res.send(500);
+                res.sendStatus(500);
             });
             
         }.bind(this));
@@ -211,77 +453,83 @@ class Router {
         //Scan ticket
         this.app.post('/api/tickets/:barcode/scan', function(req, res){
             let barcode = req.params.barcode;
-            DB.open(this.config.storage_path, db => {
+            this.db.open(db => {
                 let ticket = db.objects('Ticket').filtered("barcode = $0",barcode)[0];
+                
                 if(!ticket){
                     res.sendStatus(404);
                     return;
                 }
-                //Fetch ticket information
+
                 let ticketData = {
-                    status: 'allowed',
                     ticket: ticket,
                     type: null,
-                    show: null,
+                    scans: [],
                     pocket: null,
                     order: null,
                     customer: null,
-                    scans: []
+                    status: 'already_scanned'
                 }
-                //Find Type
-                if(ticket.type_id){
-                    let type = db.objectForPrimaryKey('Type', ticket.type_id);
-                    if(type) ticketData.type = type;
-                }
-                //Find Show
-                if(ticket.show_id){
-                    let show = db.objectForPrimaryKey('Show', ticket.show_id);
-                    if(show) ticketData.show = show;
-                }
-                //Find Pocket
-                if(ticket.pocket_id){
-                    let pocket = db.objectForPrimaryKey('Pocket', ticket.pocket_id);
-                    if(pocket) ticketData.pocket = pocket;
-                }
-                //Find customer
-                if(ticketData.pocket && ticketData.pocket.customer_id){
-                    let customer = db.objectForPrimaryKey('Customer', ticketData.pocket.customer_id);
-                    if(customer) ticketData.customer = customer;
-                }
-                //Find order
-                if(ticketData.pocket && ticketData.pocket.order_id){
-                    let order = db.objectForPrimaryKey('Order', ticketData.pocket.order_id);
-                    if(order) ticketData.order = order;
-                }
-                //Find scans
-                let scans = db.objects('Scan').filtered('ticket_id = "' + ticketData.ticket.ticket_id + '"');
-                if(scans.length) ticketData.scans = scans;
 
-                //Check if already scanned
-                if(ticketData.scans.length > 0){
-                    ticketData.status = 'already_scanned';
-                } else {
+                // Find type
+                let type = db.objectForPrimaryKey('Type', ticket.type_id);
+                if(type){
+                    ticketData.type = type;
+                }
+
+                //Find scans
+                let scans = db.objects('Scan').filtered('ticket_id = "' + ticket.ticket_id + '"');
+
+                if(scans.length > 0){
+                    ticketData.scans = Array.from(scans);
+                }
+
+                // Find pocket
+                let pocket = db.objectForPrimaryKey('Pocket', ticket.pocket_id);
+
+                if(pocket){
+                    ticketData.pocket = pocket;
+
+                    if(pocket.customer_id){
+                        let customer = db.objectForPrimaryKey('Customer', pocket.customer_id);
+                        if(customer){
+                            ticketData.customer = customer;
+                        }
+                    }
+                    if(pocket.order_id){
+                        let order = db.objectForPrimaryKey('Order', pocket.order_id);
+                        if(order){
+                            ticketData.order = order;
+                        }
+                    }
+                }
+
+                //Scan and update status
+                if(scans.length == 0){
+                    ticketData.status = "OK";
                     //Save scan
                     db.write(() => {
                         db.create('Scan', {
                             uuid: uuidv4(),
                             scanned_at: moment().toDate(),
-                            ticket_id: ticketData.ticket.ticket_id,
-                            type: 'IN'
+                            ticket_id: ticket.ticket_id,
+                            type: 'IN',
+                            type_id: ticket.type_id
                         });
                     });
                 }
-                //Add scan
                 res.send(ticketData);
+
+                
             }, error => {
                 console.warn(error);
-                res.send(500);
+                res.sendStatus(500);
             });
         }.bind(this));
 
         //Fetch pocket
         this.app.get('/api/pockets/:id', function(req, res){
-            DB.open(this.config.storage_path, db => {
+            this.db.open(db => {
                 let pocket = db.objectForPrimaryKey('Pocket', req.params.id);
                 if(!pocket){
                     res.sendStatus(404);
@@ -311,7 +559,7 @@ class Router {
                             attendees: allTickets[i].attendees,
                             type: allTickets[i].type_id ? db.objectForPrimaryKey('Type', allTickets[i].type_id) : null,
                             show: allTickets[i].show_id ? db.objectForPrimaryKey('Show', allTickets[i].show_id) : null,
-                            scans: allScans.length
+                            scans: Array.from(allScans)
                         });
                     }
                 }
@@ -323,16 +571,41 @@ class Router {
                 });
             }, error => {
                 console.warn(error);
-                res.send(500);
+                res.sendStatus(500);
             });
             
         }.bind(this));
+
+        
 
         //Reset all tickets and scan information
         this.app.get('/api/reset', function(req, res){
             //console.log('Resetting tickets, scans and last sync time');
             this.sync.reset();
             res.sendStatus(200);
+        }.bind(this));
+
+        //Update system setting
+        this.app.post('/api/settings', function(req, res){
+            this.db.open(db => {
+                //Check if setting exists
+                let setting = db.objects('Setting').filtered('parameter == $0',req.body.parameter);
+                if(!setting.length){
+                    res.sendStatus(404);
+                    return;
+                }
+                console.log('Updating setting with name ' + req.body.parameter+': ' + req.body.value);
+                db.write(() => {
+                    db.create('Setting', {
+                        parameter: req.body.parameter,
+                        value: req.body.value
+                    },true);
+                });
+                res.sendStatus(200);
+            }, error => {
+                console.warn(error);
+                res.sendStatus(500);
+            });
         }.bind(this));
 
         //React router

@@ -6,6 +6,7 @@ const moment = require('moment-timezone');
 const uuidv4 = require('uuid/v4');
 const DB = require('../lib/db');
 
+
 class Sync {
     constructor(config){
         this.config = config;
@@ -18,13 +19,11 @@ class Sync {
         this.authenticating = false;
         this.syncing = false;
 
-        this.last_sync = "2017-01-01 00:00:00";
-
         //Get network information
         this.ip = ip.address();
         this.getMacAddress();
-        //this.reset(); // Reset on boot
 
+        this.db = new DB(this.config.storage_path);
     }
     getMacAddress(){
         this.networkInterfaces = macaddress.networkInterfaces();
@@ -99,14 +98,14 @@ class Sync {
         let newScans = [];
         let scans = [];
 
-        DB.open(this.config.storage_path, db => {
+        this.db.open(db => {
 
             this.syncing = true;
 
             console.log('Syncing started')
 
             //Find new scans to sync
-            newScans = db.objects('Scan').filtered('id == null AND scanned_at < $0',moment().toDate());
+            newScans = db.objects('Scan').filtered('id == null AND type_id != null AND scanned_at < $0',moment().toDate());
             if(newScans.length){
                 for(var i=0;i<newScans.length;i++){
                     let ticket = db.objectForPrimaryKey('Ticket', newScans[i].ticket_id);
@@ -122,12 +121,15 @@ class Sync {
 
             console.log('Pushing ' + scans.length + ' scans');
 
+            //Get last sync
+            let lastSyncDate = db.objects('Setting').filtered('parameter == $0','last_sync')[0];
+
             //Get last UTC sync data       
-            let last_sync = moment.utc(this.last_sync).tz(this.config.timezone).format("YYYY-MM-DD HH:mm:ss");
+            let last_sync = moment.utc(lastSyncDate.value).tz(this.config.timezone).format("YYYY-MM-DD HH:mm:ss");
 
             axios.request(this.config.api_endpoint + '/scan/sync', {
                 method: 'POST',
-                timeout: 60000,
+                timeout: 120000,
                 headers: {
                     scantoken: this.config.scantoken,
                     timezone: this.config.timezone
@@ -142,7 +144,14 @@ class Sync {
                 }
             })
             .then(function (response) {
-                this.last_sync = response.data.utc;
+
+                db.write(() => {
+                    db.create('Setting', {
+                        parameter: 'last_sync',
+                        value: response.data.utc
+                    },true);
+                })
+
                 if(response.data.tickets.length){
                     console.log('Processing tickets')
                     this.processTickets(response.data.tickets);
@@ -161,13 +170,11 @@ class Sync {
                         db.delete(newScans);
                     });
                 };
-
                 this.syncing = false;
-
             }.bind(this))
             .catch(function (error) {
                 this.syncing = false;
-                console.log(error);
+                console.log(error.Error);
             }.bind(this));
 
         }, error => {
@@ -176,7 +183,7 @@ class Sync {
 
     }
     processTypes(types) {
-        DB.open(this.config.storage_path, db => {
+        this.db.open(db => {
             db.write(() => {
 
                 //Delete all types
@@ -197,7 +204,7 @@ class Sync {
         });
     }
     processShows(shows) {
-        DB.open(this.config.storage_path, db => {
+        this.db.open(db => {
             db.write(() => {
                 //Delete all shows
                 let allShows = db.objects('Show');
@@ -220,7 +227,7 @@ class Sync {
     }
     processTickets(tickets) {
 
-        DB.open(this.config.storage_path, db => {
+        this.db.open(db => {
 
             let scans = [];
 
@@ -248,6 +255,7 @@ class Sync {
                                 ticket_id: tickets[i].ticket_id,
                                 id: tickets[i].scans[s].id.toString(),
                                 type: tickets[i].scans[s].type,
+                                type_id: tickets[i].relations.type,
                                 scanned_at: tickets[i].scans[s].scanned_at
                             });
                         }
@@ -261,6 +269,7 @@ class Sync {
                         scanned_at: new Date(scans[i].scanned_at.replace(/-/g,"/")),
                         ticket_id: scans[i].ticket_id,
                         type: scans[i].type,
+                        type_id: scans[i].type_id
                     });
                 }
             })
@@ -269,7 +278,7 @@ class Sync {
         });
     }
     processOrders(orders) {
-        DB.open(this.config.storage_path, db => {
+        this.db.open(db => {
             db.write(() => {
                 for(var i=0;i<orders.length;i++){
                     db.create('Order', {
@@ -289,7 +298,7 @@ class Sync {
         });
     }
     processPockets(pockets) {
-        DB.open(this.config.storage_path, db => {
+        this.db.open(db => {
             db.write(() => {
                 for(var i=0;i<pockets.length;i++){
                     db.create('Pocket', {
@@ -304,7 +313,7 @@ class Sync {
         });
     }
     processCustomers(customers) {
-        DB.open(this.config.storage_path, db => {
+        this.db.open(db => {
             db.write(() => {
                 for(var i=0;i<customers.length;i++){
                     if(customers[i]){
@@ -323,8 +332,7 @@ class Sync {
     }
     
     reset() {
-        this.last_sync = "2017-01-01 00:00:00";
-        DB.open(this.config.storage_path, db => {
+        this.db.open(db => {
             db.write(() => {
                 let allOrders = db.objects('Order');
                 db.delete(allOrders);

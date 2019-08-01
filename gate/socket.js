@@ -1,5 +1,7 @@
 const io = require('socket.io');
 const Utils = require('../lib/utils');
+const DB = require('../lib/db')
+const uuidv4 = require('uuid/v4');
 
 class Socket {
     constructor(server,config,handleEventListener){
@@ -7,6 +9,9 @@ class Socket {
         this.socket = io(server);
         this.config = config;
         this.handleEventListener = handleEventListener;
+
+        //Set database
+        this.db = new DB(this.config.storage_path);
 
         this.devices = [];
 
@@ -60,22 +65,53 @@ class Socket {
     onEvent(payload,callback){
         try {
             var data = Utils.decrypt(payload,this.config.encryption_key);
+            this.handleDefaultEvents(data.event,data);
             this.handleEventListener(data.event,data);
             if(typeof callback !== 'undefined'){
                 callback();
             }
         } catch (err) {
-            console.log(err);
             log("Error decrypting incoming event on server, please verify encryption key.");
             if(typeof callback !== 'undefined'){
                 callback(err);
             }
         }
     }
+    handleDefaultEvents(event,data){
+        switch(event){
+            case 'scan':
+                // Clicker scan
+                if(data.data.clicker_id){
+                    this.db.open(db => {
+                        //Check if user already exists
+                        let clicker = db.objects('Clicker').filtered("id = $0",data.data.clicker_id)[0];
+                        if(clicker){
+                            let quantity = 1;
+                            if(typeof data.data.quantity !== 'undefined') quantity = parseInt(data.data.quantity);
+                            db.write(() => {
+                            for(var i = 0; i < quantity; i++){
+                                db.create('Scan', {
+                                    uuid: uuidv4(),
+                                    scanned_at: new Date(),
+                                    type: data.data.type,
+                                    clicker_id: clicker.id
+                                });
+                            }
+                            });
+                        }
+                    }, error => {
+                        console.log(error);
+                        res.sendStatus(500);
+                    });
+                    return;
+                }
+                // Ticket scan
+                break;
+        }
+    }
     emit(targets,event){
         let hash = Utils.encrypt(event,this.config.encryption_key);
         for(var i = 0; i < targets.length; i++){
-            console.log(targets[i]);
             this.socket.to(targets[i]).emit('event', hash);
         }
     }

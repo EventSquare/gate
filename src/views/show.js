@@ -42,8 +42,8 @@ class Show extends React.Component {
         return (
             <tr key={type.id}>
                 <td>{type.name}
-                    <div class="progress" style={{height: "3px"}}>
-                        <div class="progress-bar" role="progressbar" style={{width: type.percentage + '%'}}></div>
+                    <div className="progress" style={{height: "3px"}}>
+                        <div className="progress-bar" role="progressbar" style={{width: type.percentage + '%'}}></div>
                     </div>
                 </td>
                 <td>{type.scans}</td>

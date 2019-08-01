@@ -1,13 +1,14 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import { BrowserRouter as Router, Route, Link, Redirect } from "react-router-dom";
+import { BrowserRouter as Router, Route, Link, Switch, Redirect } from "react-router-dom";
 import Cookies from 'universal-cookie';
 
 import './sass/app.scss';
-import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap';
 
 const Client = require('./../client')
 const cookies = new Cookies();
+const axios = require('axios');
 
 //Components
 const NavBar = require('./components/navbar')
@@ -30,22 +31,21 @@ class App extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            kiosk: cookies.get('kiosk') || null
+            authenticating: true,
+            user: null
         };
         this.emit = this.emit.bind(this);
         this.logIn = this.logIn.bind(this);
         this.logOut = this.logOut.bind(this);
+        this.updateUser = this.updateUser.bind(this);
         this.esq = null;
     }
     componentDidMount() {
-        if(this.state.kiosk){
-            this.initSocket();
-        }
+        this.authenticate();
     }
     initSocket(){
         this.esq = new Client({
-            name: this.state.kiosk,
-            encryption_key: 'd4ce302a-5bc0-4414-a06f-8471e7a0d1ad'
+            name: this.state.user.username
         });
         this.esq.on('connect', function () {
             console.log('Connected');
@@ -57,50 +57,100 @@ class App extends React.Component {
     emit(event,data){
         this.esq.emit(event,data);
     }
-    logIn(kiosk,callback){
-        cookies.set('kiosk', kiosk, { path: '/' });
-        this.setState({
-            kiosk: kiosk
-        },function(){
-            callback(true);
-        });
-    }
-    logOut(){
-        cookies.remove('kiosk');
-        this.setState({
-            kiosk: null
-        });
-    }
-    renderApp(){
-        if(this.state.kiosk){
-            return (
-                <div>
-                    <NavBar/>
-                    <Route exact path="/" render={(props) => <Dashboard {...props} emit={this.emit} />}></Route>
-                    <Route path="/orders/:id" render={(props) => <Order {...props} emit={this.emit} />}></Route>
-                    <Route path="/customers/:id" render={(props) => <Customer {...props} emit={this.emit} />}></Route>
-                    <Route exact path="/shows" component={Shows} />
-                    <Route exact path="/badges" render={(props) => <Badges {...props} emit={this.emit} />}/>
-                    <Route path="/shows/:id" component={Show} />
-                    <Route exact path="/reports" component={Reports} />
-                    <Route exact path="/settings" component={Settings} />
-                </div>
-            )
+    authenticate() {
+        const user_id = cookies.get('user_id') || null;
+        if(user_id){
+            axios.post('/api/auth',{
+                user_id: user_id
+            })
+            .then(function (response) {
+                this.initUser(response.data.user);
+            }.bind(this))
+            .catch(function (error) {
+                if(error.response && error.response.status == 404){
+                    cookies.remove('user_id');
+                }
+                this.toLogin();
+            });
         } else {
-            return (
-                <div>
-                    <Route exact path="/login" render={(props) => <Login {...props} logIn={this.logIn} />}></Route>
-                    <Redirect to="/login"/>
-                </div>
-            )
+            console.log('No uuid for user found');
+            this.toLogin();
         }
     }
+    initUser(user){
+        if(this.esq) this.esq.disconnect();
+        this.setState({
+            user: user,
+            authenticating: false
+        },function(){
+            this.initSocket();
+        });
+    }
+    toLogin(){
+        if(window.location.pathname !== '/login'){
+            window.location = "/login";
+            return;
+        }
+        this.setState({
+            authenticating: false
+        });
+    }
+    logIn(username,callback){
+        axios.post('/api/login',{
+            username: username
+        })
+        .then(function (response) {
+            cookies.set('user_id', response.data.user.uuid, { path: '/' });
+            callback(true);
+        }.bind(this))
+        .catch(function (error) {
+            callback(false);
+            console.log(error);
+        });
+    }
+    logOut(callback){
+        cookies.remove('user_id');
+        this.esq.disconnect();
+        this.setState({
+            user: null
+        });
+        callback();
+    }
+    updateUser(user,callback){
+        axios.post('/api/users/' + user.uuid,user)
+        .then(function (response) {
+            callback(true);
+            this.initUser(response.data.user)
+        }.bind(this))
+        .catch(function (error) {
+            callback(false);
+            console.log(error);
+        });
+    }
     render() {
+        if(this.state.authenticating){
+            return (
+                <div>Bezig met aanmelden...</div>
+            )
+        }
         return (
             <Router>
                 <div style={{height: '100%'}}>
-                    { this.renderApp() }
-                    <Route exact path="/logout" render={(props) => <Logout {...props} logOut={this.logOut} />}></Route>
+                    { this.state.user &&
+                    <NavBar user={this.state.user}/>
+                    }
+                    <Switch>    
+                        <Route path="/login" render={(props) => <Login {...props} logIn={this.logIn} />}></Route>
+                        <Route path="/logout" render={(props) => <Logout {...props} logOut={this.logOut} />}></Route>
+                        <Route path="/orders/:id" render={(props) => <Order {...props} emit={this.emit} />}></Route>
+                        <Route path="/customers/:id" render={(props) => <Customer {...props} emit={this.emit} />}></Route>
+                        <Route exact path="/shows" component={Shows} />
+                        <Route exact path="/badges" render={(props) => <Badges {...props} emit={this.emit} />}/>
+                        <Route path="/shows/:id" component={Show} />
+                        <Route exact path="/reports" component={Reports} />
+                        <Route exact path="/settings" render={(props) => <Settings {...props} emit={this.emit} user={this.state.user} updateUser={this.updateUser} />} />
+                        <Route path="/" render={(props) => <Dashboard {...props} emit={this.emit} />}></Route>
+                    </Switch>
                 </div>
             </Router>
         )

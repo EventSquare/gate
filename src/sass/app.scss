@@ -1,9 +1,8 @@
 body,html {
-    //background-color: #EEE;
+    //background-color: red;
     height: 100%;
     position: relative;
 }
-
 
 #app {
     min-height: 100%;
@@ -17,7 +16,7 @@ body,html {
 }
 
 .page-padding {
-    padding: 100px 0px;
+    padding: 80px 0px;
 }
 
 .modal-container {
@@ -40,3 +39,7 @@ body,html {
         margin-top: 50px;
     }
 }
+
+$body-bg: #FFF;
+
+@import "./node_modules/bootstrap/scss/bootstrap";

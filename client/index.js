@@ -30,10 +30,6 @@ class Client {
     }
     validateConfigOrDie(){
         let valid = true;
-        if(!this.config.encryption_key){
-            console.error("The config property 'encryption_key' is required when starting a Client.");
-            valid = false;
-        }
         if(!this.config.name){
             console.error("The config property 'name' is required when starting a Client.");
             valid = false;
