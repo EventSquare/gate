@@ -1,6 +1,6 @@
 {
     "name": "eventsquare-gate",
-    "version": "0.2.4",
+    "version": "3.0.0",
     "description": "Event support access control server.",
     "main": "gate.js",
     "dependencies": {
