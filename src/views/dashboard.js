@@ -263,7 +263,7 @@ class DashBoard extends React.Component {
                         }
                         <h4><b>{ this.state.ticket.type.name }</b></h4>
                     </div>
-                    <div className="p-3 mb-5 bg-danger text-white text-center">
+                    <div className="p-3 mb-5 bg-danger text-white text-center rounded">
                         <h1>REEDS GESCAND</h1>
                         <p className="lead mb-0">Dit ticket werd reeds gescand op { moment(this.state.ticket.scans[0].scanned_at).format("YYYY-MM-DD HH:mm:ss") }</p>
                     </div>
@@ -278,7 +278,7 @@ class DashBoard extends React.Component {
                         }
                         <h4><b>{ this.state.ticket.type.name }</b></h4>
                     </div>
-                    <div className="p-3 mb-5 bg-success text-white text-center">
+                    <div className="p-3 mb-5 bg-success text-white text-center rounded">
                         <h1 className="mb-0">OK</h1>
                     </div>
                 </div>
@@ -314,7 +314,7 @@ class DashBoard extends React.Component {
                     </div>
                     { this.state.not_found &&
                     <div>
-                        <div className="p-3 mb-5 bg-danger text-white text-center">
+                        <div className="p-3 mb-5 bg-danger text-white text-center rounded">
                             <h1>NIET GEVONDEN</h1>
                             <p className="lead mb-0">We kunnen geen ticket vinden met deze barcode.</p>
                         </div>

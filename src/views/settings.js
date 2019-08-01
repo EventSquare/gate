@@ -100,8 +100,8 @@ class Settings extends React.Component {
                             <div className="card">
                                 <div className="card-body">
                                     <h5 className="card-title">Testfuncties</h5>
-                                    <button className="btn btn-block btn-light" onClick={() => this.simulateClick(12,'IN')}>Counter 12 x IN</button>
-                                    <button className="btn btn-block btn-light" onClick={() => this.simulateClick(3,'OUT')}>Counter 3 x OUT</button>
+                                    <button className="btn btn-block btn-light" onClick={() => this.simulateClick(1,'IN')}>Counter x IN</button>
+                                    <button className="btn btn-block btn-light" onClick={() => this.simulateClick(1,'OUT')}>Counter x OUT</button>
                                 </div>
                             </div>
                         </div>

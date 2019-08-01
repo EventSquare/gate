@@ -92,14 +92,13 @@ class Order extends React.Component {
         return (
             <div className="container">
                 <div className="row">
-                    <div className="col-sm mb-3">
+                    <div className="col mb-3">
                         <h1>Bestelling #{ this.state.order.reference }</h1>
                         <hr/>
                     </div>
                 </div>
-                
                 <div className="row">
-                    <div className="col">
+                    <div className="col col-md-4">
                         { this.state.order.firstname &&
                         <div>
                             <h5 className="mb-3">Details</h5>
@@ -128,7 +127,7 @@ class Order extends React.Component {
                         </div>
                         }
                     </div>
-                    <div className="col-8">
+                    <div className="col">
                         { this.renderPockets() }
                     </div>
                 </div>
@@ -153,8 +152,6 @@ class Order extends React.Component {
                         <tr>
                             <th scope="col">Naam</th>
                             <th scope="col">Voorstelling</th>
-                            <th scope="col">Type</th>
-                            <th scope="col">Plaats</th>
                             <th scope="col">Scan</th>
                             <th scope="col"></th>
                         </tr>
@@ -169,11 +166,16 @@ class Order extends React.Component {
     renderTicket(ticket){
         return (
             <tr key={ticket.id} className={ticket.scans.length ? "table-success" : ""}>
-                <td>{ (ticket.firstname ? ticket.firstname : '') + ' ' + (ticket.lastname ? ticket.lastname : '') }</td>
-                <td>{ ticket.show ? ticket.show.name : '' }</td>
-                <td>{ ticket.type ? ticket.type.name : '-' }</td>
-                <td>{ ticket.place ? ('Section: ' + ticket.place.data.section + ' - ' + 'Row: ' + ticket.place.data.row + ' - ' + 'Place: ' + ticket.place.data.seat) : '' }</td>
-                <td>{ ticket.scans.length ? moment(ticket.scans[0].scanned_at).format("YYYY-MM-DD HH:mm:ss") : '' }</td>
+                <td>
+                    <h6 className="mb-0"><b>{ (ticket.firstname ? ticket.firstname : '') + ' ' + (ticket.lastname ? ticket.lastname : '') }</b></h6>
+                    <p className="mb-0">{ ticket.type ? ticket.type.name : '-' }</p>
+                    <p className="mb-0 small">{ ticket.barcode }</p>
+                </td>
+                <td>
+                    <h6 className="mb-0">{ ticket.show ? ticket.show.name : '' }</h6>
+                    <p className="mb-0 small">{ ticket.place ? ('Section: ' + ticket.place.data.section + ' - ' + 'Row: ' + ticket.place.data.row + ' - ' + 'Place: ' + ticket.place.data.seat) : '' }</p>
+                </td>
+                <td>{ ticket.scans.length ? moment(ticket.scans[0].scanned_at).format("DD-MM-YYYY HH:mm:ss") : '' }</td>
                 <td>
                     <div className="dropdown show">
                         <a className="btn btn-sm btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Acties</a>
@@ -190,18 +192,16 @@ class Order extends React.Component {
     scanTicket(barcode){
         axios.post('/api/tickets/' + barcode + '/scan')
         .then(function (response) {
-            // handle success
-            this.props.emit('scan', {
-                last_barcode: barcode,
-                ticketData: response.data
-            });
-            this.fetchPockets();
+            // handle error
+            console.log(response);
+            if(response.data && response.data.status == 'already_scanned'){
+                alert('Dit ticket is reeds gescanned');
+            } else {
+                this.fetchPockets();
+            }
         }.bind(this))
         .catch(function (error) {
-            // handle error
-            if(error.response && error.response.data == 'already_scanned'){
-                alert('Dit ticket is reeds gescanned');
-            }
+            
         });
     }
     render() {
