@@ -1,7 +1,132 @@
-const escpos = require('../lib/escpos');
+const DB = require('../lib/db')
+const escpos = require('escpos');
 
 class Printer {
-    constructor() {
+    constructor(config) {
+        this.config = config;
+        //Set database
+        this.db = new DB(this.config.storage_path);
+    }
+    printTicket(ip,barcode) {
+
+        this.db.open(db => {
+            
+            let ticket = db.objects('Ticket').filtered("barcode = $0",barcode)[0];
+            
+            if(!ticket){
+                return;
+            }
+
+            let ticketData = {
+                ticket: ticket,
+                type: null,
+                pocket: null,
+                order: null,
+                customer: null,
+                status: 'already_scanned'
+            }
+
+            // Find type
+            let type = db.objectForPrimaryKey('Type', ticket.type_id);
+            if(type){
+                ticketData.type = type;
+            }
+
+            // Find pocket
+            let pocket = db.objectForPrimaryKey('Pocket', ticket.pocket_id);
+
+            if(pocket){
+                ticketData.pocket = pocket;
+
+                if(pocket.customer_id){
+                    let customer = db.objectForPrimaryKey('Customer', pocket.customer_id);
+                    if(customer){
+                        ticketData.customer = customer;
+                    }
+                }
+                if(pocket.order_id){
+                    let order = db.objectForPrimaryKey('Order', pocket.order_id);
+                    if(order){
+                        ticketData.order = order;
+                    }
+                }
+            }
+
+            //Print
+
+            const device  = new escpos.Network(ip);
+            const printer = new escpos.Printer(device);
+
+            device.open(function(){
+
+                if(ticketData.ticket.firstname){
+                    printer.font('a').align('ct').style('B').size(2, 2);
+                    printer.text(ticketData.ticket.firstname+" "+ticketData.ticket.lastname);
+                    printer.feed(1);
+                }
+                if(ticketData.type){
+                    printer.font('a').align('ct').style('B').size(1,2);
+                    printer.text(ticketData.type.name);
+                }
+                
+                printer.qrimage(ticketData.ticket.barcode, function(err){
+                    this.feed(2);
+                    this.font('a').align('ct').style('B').size(1,1);
+                    this.text('*** Powered by EventSquare ***')
+                    this.style('NORMAL')
+                    this.text('Ticketing technology')
+                    this.feed(3);
+                    this.cut();
+                    this.close();
+                });
+            });
+
+        });
+        //Get ticket
+    }
+    /** Print order on POS printer */
+    printOrder(order, print_ip, print_port){
+        try{
+            let printData = {
+                eventName: this.config.eventName,
+                eventDate: this.config.eventDate,
+                eventLocation: this.config.eventLocation,
+                footerline: this.config.footerline,
+                reference: order.reference,
+                created: order.created_at,
+                payment: order.payment_method,
+                tickets: []
+            };
+
+            order.tickets.forEach(ticket => {
+
+                let qrData = {
+                    u: ticket.uuid,
+                    t: ticket.type.id
+                };
+
+                // encrypted...
+                // let encrypted_qr = Utils.encrypt(qrData,this.config.encryption_key);
+                // base64 encoded
+
+                let encrypted_qr = Buffer.from(JSON.stringify(qrData)).toString('base64');
+
+                let ticketData = {
+                    uuid: ticket.uuid,
+                    data: Object.assign({},ticket.data),
+                    type: Object.assign({},ticket.type),
+                    qrdata: encrypted_qr
+                }
+
+                printData.tickets.push(ticketData);
+            });
+            
+            // print on specific printer...
+            Printer.print(print_ip, print_port, printData);
+        } catch(err){
+            console.log("Printing Error:")
+            console.trace(err);
+        }
     }
 
     static print(ip, port, printdata) {

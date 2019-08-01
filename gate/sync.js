@@ -174,7 +174,7 @@ class Sync {
             }.bind(this))
             .catch(function (error) {
                 this.syncing = false;
-                console.log(error.Error);
+                console.log("Unable to call sync");
             }.bind(this));
 
         }, error => {
@@ -263,14 +263,17 @@ class Sync {
                 }
                 //Insert scans
                 for(var i=0;i<scans.length;i++){
-                    db.create('Scan', {
-                        uuid: uuidv4(),
-                        id: scans[i].id.toString(),
-                        scanned_at: new Date(scans[i].scanned_at.replace(/-/g,"/")),
-                        ticket_id: scans[i].ticket_id,
-                        type: scans[i].type,
-                        type_id: scans[i].type_id
-                    });
+                    let allScans = db.objects('Scan').filtered("id = $0",scans[i].ticket_id);
+                    if(!allScans){
+                        db.create('Scan', {
+                            uuid: uuidv4(),
+                            id: scans[i].id.toString(),
+                            scanned_at: new Date(scans[i].scanned_at.replace(/-/g,"/")),
+                            ticket_id: scans[i].ticket_id,
+                            type: scans[i].type,
+                            type_id: scans[i].type_id
+                        });
+                    }
                 }
             })
         }, error => {

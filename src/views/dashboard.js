@@ -291,7 +291,7 @@ class DashBoard extends React.Component {
                 <div className="container">
                     { !this.state.query &&
                     <div className="row">
-                        <div class="col">
+                        <div className="col">
                             <h1 className="display-4 mb-4">Onthaal</h1>
                         </div>
                     </div>

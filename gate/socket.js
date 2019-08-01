@@ -1,7 +1,8 @@
 const io = require('socket.io');
-const Utils = require('../lib/utils');
 const DB = require('../lib/db')
 const uuidv4 = require('uuid/v4');
+const Printer = require('./print');
+const moment = require('moment-timezone');
 
 class Socket {
     constructor(server,config,handleEventListener){
@@ -12,6 +13,8 @@ class Socket {
 
         //Set database
         this.db = new DB(this.config.storage_path);
+        //Set printer
+        this.printer = new Printer(this.config);
 
         this.devices = [];
 
@@ -25,24 +28,18 @@ class Socket {
         this.socket.on('connection', this.onConnect);
     }
     onConnect(socket){
-        //Listen for disconnection
+        //Listen for disconnection  
         socket.on('disconnect', () => this.onDisconnect(socket));
         socket.on('handshake', (payload) => this.onHandShake(socket,payload));
-        socket.on('event', this.onEvent);
+        socket.on('event', (payload,callback) => this.onEvent(socket,payload,callback));
     }
     onHandShake(socket,payload){
         //Join channel of device name
         socket.join(payload.name);
         //Check if socket connection already in devices
-        let exists = false;
-        for(var i = 0; i < this.devices.length; i++){
-            if(this.devices[i].socket_id == payload.socket_id){
-                exists = true;
-                break;
-            }
-        }
+        let device = this.getDeviceBySocketId(payload.socket_id);
         //Add to devices if not
-        if(!exists){
+        if(!device){
             this.devices.push({
                 name: payload.name,
                 device: payload.device,
@@ -50,6 +47,13 @@ class Socket {
                 socket_id: payload.socket_id
             });
             log(payload.name + ' is now connected. Total devices is now ' + this.devices.length);
+        }
+    }
+    getDeviceBySocketId(socket_id){
+        for(var i = 0; i < this.devices.length; i++){
+            if(this.devices[i].socket_id == socket_id){
+                return this.devices[i];
+            }
         }
     }
     onDisconnect(socket){
@@ -62,38 +66,39 @@ class Socket {
             }
         }
     }
-    onEvent(payload,callback){
-        try {
-            var data = Utils.decrypt(payload,this.config.encryption_key);
-            this.handleDefaultEvents(data.event,data);
-            this.handleEventListener(data.event,data);
-            if(typeof callback !== 'undefined'){
-                callback();
+    onEvent(socket,payload,callback){
+        //Check if device exists
+        let device = this.getDeviceBySocketId(socket.id);
+        if(device){
+            try {
+                this.handleDefaultEvents(payload.event,payload.data,device);
+                this.handleEventListener(payload.event,payload.data,device);
+                if(typeof callback !== 'undefined') callback();
+            } catch (err) {
+                log("Error decrypting incoming event on server, please verify encryption key.");
+                if(typeof callback !== 'undefined') callback(err);
             }
-        } catch (err) {
-            log("Error decrypting incoming event on server, please verify encryption key.");
-            if(typeof callback !== 'undefined'){
-                callback(err);
-            }
+        } else {
+            log("Unkown device is emitting:" + payload);
         }
     }
-    handleDefaultEvents(event,data){
+    handleDefaultEvents(event,payload,device){
         switch(event){
             case 'scan':
                 // Clicker scan
-                if(data.data.clicker_id){
+                if(payload.clicker_id){
                     this.db.open(db => {
                         //Check if user already exists
-                        let clicker = db.objects('Clicker').filtered("id = $0",data.data.clicker_id)[0];
+                        let clicker = db.objects('Clicker').filtered("id = $0",payload.clicker_id)[0];
                         if(clicker){
                             let quantity = 1;
-                            if(typeof data.data.quantity !== 'undefined') quantity = parseInt(data.data.quantity);
+                            if(typeof payload.quantity !== 'undefined') quantity = parseInt(payload.quantity);
                             db.write(() => {
                             for(var i = 0; i < quantity; i++){
                                 db.create('Scan', {
                                     uuid: uuidv4(),
-                                    scanned_at: new Date(),
-                                    type: data.data.type,
+                                    scanned_at: typeof payload.scanned_at !== 'undefined' ? moment(payload.scanned_at).toDate() : new Date(),
+                                    type: payload.type,
                                     clicker_id: clicker.id
                                 });
                             }
@@ -101,18 +106,30 @@ class Socket {
                         }
                     }, error => {
                         console.log(error);
-                        res.sendStatus(500);
                     });
                     return;
                 }
                 // Ticket scan
                 break;
+            case 'print_ticket':
+                //Check if user in database
+                this.db.open(db => {
+                    let user = db.objects('User').filtered("username = $0",device.name)[0];
+                    if(user && user.ticket_printer){
+                        this.printer.printTicket(user.ticket_printer,payload.barcode);
+                    }
+                }, error => {
+                    console.log(error);
+                });
+                break;
         }
     }
-    emit(targets,event){
-        let hash = Utils.encrypt(event,this.config.encryption_key);
+    emit(targets,payload){
         for(var i = 0; i < targets.length; i++){
-            this.socket.to(targets[i]).emit('event', hash);
+            this.socket.to(targets[i]).emit('event', {
+                event: payload.event,
+                data: payload.data
+            });
         }
     }
     stop(){

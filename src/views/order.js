@@ -16,6 +16,7 @@ class Order extends React.Component {
         }
         this.openBadge = this.openBadge.bind(this);
         this.closeBadge = this.closeBadge.bind(this);
+        this.printTicket = this.printTicket.bind(this);
     };
     componentDidMount() {
         this.loadOrder();
@@ -181,7 +182,7 @@ class Order extends React.Component {
                         <a className="btn btn-sm btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Acties</a>
                         <div className="dropdown-menu" aria-labelledby="dropdownMenuLink">
                             <button onClick={() => this.scanTicket(ticket.barcode)} className="dropdown-item" href="#">Scan</button>
-                            <button onClick={() => this.printTicket(ticket.barcode)} className="dropdown-item" href="#">Afdrukken</button>
+                            <button onClick={() => this.printTicket(ticket)} className="dropdown-item" href="#">Afdrukken</button>
                             {/* <button onClick={() => this.openBadge(ticket)} className="dropdown-item" href="#">Maak badge</button> */}
                         </div>
                     </div>
@@ -203,6 +204,13 @@ class Order extends React.Component {
         .catch(function (error) {
             
         });
+    }
+    printTicket(ticket){
+        this.props.emit('print_ticket',{
+            name: ticket.firstname + " " + ticket.lastname,
+            type: ticket.type.name,
+            barcode: ticket.barcode
+        })
     }
     render() {
         return (

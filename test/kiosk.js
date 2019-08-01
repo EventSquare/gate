@@ -12,7 +12,7 @@ const gate = new EventSquare.Gate({
 
 // let label_path = path.join(__dirname + '/labels/bafd.zpl');
 
-gate.on('scan',function(event){
+gate.on('print_ticket',function(payload,device){
     
 });
 

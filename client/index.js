@@ -1,6 +1,5 @@
 const io = require('socket.io-client');
 const ip = require('ip');
-const Utils = require('../lib/utils');
 
 class Client {
     constructor(newConfig){
@@ -57,16 +56,13 @@ class Client {
             }
             return;
         }
-        
-        var hash = Utils.encrypt({
-            name: this.config.name,
-            event: event,
-            data: data
-        },this.config.encryption_key);
 
         let ackTimeout = null;
 
-        this.socket.emit('event',hash,function(err){
+        this.socket.emit('event',{
+            event: event,
+            data: data
+        },function(err){
             clearTimeout(ackTimeout);
             if(typeof callback !== 'undefined'){
                 callback(err);
@@ -91,8 +87,7 @@ class Client {
     }
     onEvent(payload){
         try {
-            var data = Utils.decrypt(payload,this.config.encryption_key);
-            this.handleEventListener(data.event,data);
+            this.handleEventListener(payload.event,payload.data);
         } catch (err) {
             console.log("Error decrypting incoming event on client, please verify encryption key.");
         }
