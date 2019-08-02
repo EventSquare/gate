@@ -37,6 +37,7 @@ class Sync {
             console.warn('No scantoken provided, not starting sync service.')
             return;
         }
+        
         //Start Authentication + interval
         this.auth();
         this.authInterval = setInterval(function(){
@@ -256,26 +257,39 @@ class Sync {
                                 id: tickets[i].scans[s].id.toString(),
                                 type: tickets[i].scans[s].type,
                                 type_id: tickets[i].relations.type,
-                                scanned_at: tickets[i].scans[s].scanned_at
+                                scanned_at: moment.tz(tickets[i].scans[s].scanned_at,this.config.timezone).toDate()
                             });
                         }
                     }
                 }
                 //Insert scans
-                console.log(scans.length);
                 for(var i=0;i<scans.length;i++){
                     let allScans = db.objects('Scan').filtered("id = $0",scans[i].id);
                     if(!allScans.length){
                         db.create('Scan', {
                             uuid: uuidv4(),
                             id: scans[i].id.toString(),
-                            scanned_at: new Date(scans[i].scanned_at.replace(/-/g,"/")),
+                            scanned_at: scans[i].scanned_at,
                             ticket_id: scans[i].ticket_id,
                             type: scans[i].type,
                             type_id: scans[i].type_id
                         });
                     }
                 }
+
+                //Check if any of the reserved barcodes are already converted to tickets
+                let allReservedTickets = db.objects('Ticket').filtered('reserved == true');
+                if(allReservedTickets.length > 0){
+                    for(var i = 0; i < allReservedTickets.length; i++){
+                        //Check if there are tickets with the same barcode that are not reserved
+                        let realTickets = db.objects('Ticket').filtered('reserved == false && barcode = $0',allReservedTickets[i].barcode);
+                        if(realTickets.length){
+                            //Delete reserved ticket
+                            db.delete(allReservedTickets[i]);
+                        }
+                    }
+                }
+
             })
         }, error => {
             console.warn(error);

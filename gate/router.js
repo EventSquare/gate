@@ -40,8 +40,8 @@ class Router {
             const end = req.query.end;
 
             //Get last UTC sync data       
-            let startDate = moment.utc(start).tz(this.config.timezone);
-            let endDate = moment.utc(end).tz(this.config.timezone);
+            let startDate = moment.tz(start,this.config.timezone);
+            let endDate = moment.tz(end,this.config.timezone);
             
             //Get scans
             this.db.open(db => {
@@ -95,6 +95,20 @@ class Router {
                 let allBadges = db.objects('Badge').sorted('created_at',{ascending: true});
                 res.send({
                     badges: allBadges
+                });
+                return;
+            },function(error){
+                console.log(error);
+                res.sendStatus(500);
+            });
+        }.bind(this));
+
+        //Fetch scans
+        this.app.get('/api/scans', function(req, res){
+            this.db.open(db => {
+                let allClicks = db.objects('Scan').sorted('scanned_at',{descending: true});
+                res.send({
+                    clicks: allClicks
                 });
                 return;
             },function(error){
@@ -485,21 +499,22 @@ class Router {
                 }
 
                 // Find pocket
-                let pocket = db.objectForPrimaryKey('Pocket', ticket.pocket_id);
+                if(ticket.pocket_id){
+                    let pocket = db.objectForPrimaryKey('Pocket', ticket.pocket_id);
+                    if(pocket){
+                        ticketData.pocket = pocket;
 
-                if(pocket){
-                    ticketData.pocket = pocket;
-
-                    if(pocket.customer_id){
-                        let customer = db.objectForPrimaryKey('Customer', pocket.customer_id);
-                        if(customer){
-                            ticketData.customer = customer;
+                        if(pocket.customer_id){
+                            let customer = db.objectForPrimaryKey('Customer', pocket.customer_id);
+                            if(customer){
+                                ticketData.customer = customer;
+                            }
                         }
-                    }
-                    if(pocket.order_id){
-                        let order = db.objectForPrimaryKey('Order', pocket.order_id);
-                        if(order){
-                            ticketData.order = order;
+                        if(pocket.order_id){
+                            let order = db.objectForPrimaryKey('Order', pocket.order_id);
+                            if(order){
+                                ticketData.order = order;
+                            }
                         }
                     }
                 }

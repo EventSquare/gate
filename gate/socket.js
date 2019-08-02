@@ -94,14 +94,14 @@ class Socket {
                             let quantity = 1;
                             if(typeof payload.quantity !== 'undefined') quantity = parseInt(payload.quantity);
                             db.write(() => {
-                            for(var i = 0; i < quantity; i++){
-                                db.create('Scan', {
-                                    uuid: uuidv4(),
-                                    scanned_at: typeof payload.scanned_at !== 'undefined' ? moment(payload.scanned_at).toDate() : new Date(),
-                                    type: payload.type,
-                                    clicker_id: clicker.id
-                                });
-                            }
+                                for(var i = 0; i < quantity; i++){
+                                    db.create('Scan', {
+                                        uuid: uuidv4(),
+                                        scanned_at: typeof payload.scanned_at !== 'undefined' ? moment.tz(payload.scanned_at,this.config.timezone).toDate() : new Date(),
+                                        type: payload.type,
+                                        clicker_id: clicker.id
+                                    });
+                                }
                             });
                         }
                     }, error => {
