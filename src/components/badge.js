@@ -7,7 +7,7 @@ class Badge extends React.Component {
         this.printBadge = this.printBadge.bind(this);
     };
     componentDidMount() {
-        
+
     }
     onChange(event) {
         var property = event.target.name;
@@ -16,8 +16,14 @@ class Badge extends React.Component {
     }
     printBadge(){
         this.props.onEmit('print_badge', {
-            name: this.props.name,
-            company: this.props.company
+            ticket: {
+                firstname: this.props.name,
+                lastname: ""
+            },
+            order: {
+                company: this.props.company
+            },
+            ignoreBadges: true
         });
         this.props.onClose();
     }

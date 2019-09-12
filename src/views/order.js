@@ -182,8 +182,8 @@ class Order extends React.Component {
                         <a className="btn btn-sm btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Acties</a>
                         <div className="dropdown-menu" aria-labelledby="dropdownMenuLink">
                             <button onClick={() => this.scanTicket(ticket.barcode)} className="dropdown-item" href="#">Scan</button>
-                            <button onClick={() => this.printTicket(ticket)} className="dropdown-item" href="#">Afdrukken</button>
-                            {/* <button onClick={() => this.openBadge(ticket)} className="dropdown-item" href="#">Maak badge</button> */}
+                            <button onClick={() => this.openBadge(ticket)} className="dropdown-item" href="#">Maak badge</button>
+                            {/* <button onClick={() => this.printTicket(ticket)} className="dropdown-item" href="#">Afdrukken</button> */}
                         </div>
                     </div>
                 </td>
@@ -194,7 +194,7 @@ class Order extends React.Component {
         axios.post('/api/tickets/' + barcode + '/scan')
         .then(function (response) {
             // handle error
-            console.log(response);
+            this.props.emit('scan',response.data);
             if(response.data && response.data.status == 'already_scanned'){
                 alert('Dit ticket is reeds gescanned');
             } else {
@@ -204,6 +204,9 @@ class Order extends React.Component {
         .catch(function (error) {
             
         });
+    }
+    printBadge(ticket) {
+
     }
     printTicket(ticket){
         this.props.emit('print_ticket',{

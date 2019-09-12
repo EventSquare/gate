@@ -1,5 +1,6 @@
 const io = require('socket.io');
-const DB = require('../lib/db')
+const DB = require('../lib/db');
+const LabelPrinter = require('../lib/labelprinter');
 const uuidv4 = require('uuid/v4');
 const Printer = require('./print');
 const moment = require('moment-timezone');
@@ -85,34 +86,17 @@ class Socket {
     handleDefaultEvents(event,payload,device){
         switch(event){
             case 'scan':
-                // Clicker scan
-                if(payload.clicker_id){
-                    this.db.open(db => {
-                        //Check if user already exists
-                        let clicker = db.objects('Clicker').filtered("id = $0",payload.clicker_id)[0];
-                        if(clicker){
-                            let quantity = 1;
-                            if(typeof payload.quantity !== 'undefined') quantity = parseInt(payload.quantity);
-                            db.write(() => {
-                                for(var i = 0; i < quantity; i++){
-                                    db.create('Scan', {
-                                        uuid: uuidv4(),
-                                        scanned_at: typeof payload.scanned_at !== 'undefined' ? moment.tz(payload.scanned_at,this.config.timezone).toDate() : new Date(),
-                                        type: payload.type,
-                                        clicker_id: clicker.id
-                                    });
-                                }
-                            });
-                        }
-                    }, error => {
-                        console.log(error);
-                    });
-                    return;
-                }
                 // Ticket scan
+                if(payload.status == "OK"){
+                    this.printBadge(device,payload);
+                }
+                break;
+            case 'print_badge':
+                // Print badge
+                this.printBadge(device,payload);
                 break;
             case 'print_ticket':
-                //Check if user in database
+                // Print ticket
                 this.db.open(db => {
                     let user = db.objects('User').filtered("username = $0",device.name)[0];
                     if(user && user.ticket_printer){
@@ -123,6 +107,20 @@ class Socket {
                 });
                 break;
         }
+    }
+    printBadge(device,payload) {
+        //Check if badge needs to be printed on scan
+        this.db.open(db => {
+            let user = db.objects('User').filtered("username = $0",device.name)[0];
+            if(user && user.badge_printer){
+                const labelprinter = new LabelPrinter(this.config);
+                //Fixed label path and name
+                const label = this.config.storage_path + '/label.zpl';
+                labelprinter.printLabel(user.badge_printer,label,payload);
+            }
+        }, error => {
+            console.log(error);
+        });
     }
     emit(targets,payload){
         for(var i = 0; i < targets.length; i++){

@@ -63,6 +63,7 @@ class DashBoard extends React.Component {
             axios.post('/api/tickets/' + barcode + '/scan')
             .then(function (response) {
                 // handle success
+                this.props.emit('scan',response.data);
                 this.setState({
                     ticket: response.data
                 });
@@ -78,7 +79,7 @@ class DashBoard extends React.Component {
             }.bind(this))
             .then(function () {
                 // always executed
-            });
+            }.bind(this));
         }
     }
     fetchSearch(){

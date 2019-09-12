@@ -70,7 +70,7 @@ class Settings extends React.Component {
                                             </div>
                                             <div className="col">
                                                 <div className="form-group">
-                                                    <label htmlFor="badge_printer">Badge printer</label>
+                                                    <label htmlFor="badge_printer">Badge printer name</label>
                                                     <input autoComplete="off" onChange={this.onChange} name="badge_printer" value={this.state.user.badge_printer ? this.state.user.badge_printer : ""} type="text" className="form-control" id="badge_printer" placeholder="IP adres"/>
                                                 </div>
                                             </div>

@@ -2,6 +2,8 @@ const express = require('express')
 const path = require("path")
 const moment = require('moment-timezone');
 const uuidv4 = require('uuid/v4');
+const fileUpload = require('express-fileupload');
+const csv = require("csvtojson");
 
 const DB = require('../lib/db')
 
@@ -18,6 +20,7 @@ class Router {
         //Static folders
         this.app.use('/dist', express.static(path.join(__dirname, '../dist')));
         this.app.use(express.json())
+        this.app.use(fileUpload());
 
         //Fetch stats data
         this.app.get('/api/shows', function(req, res){
@@ -92,7 +95,7 @@ class Router {
         //Fetch badges
         this.app.get('/api/badges', function(req, res){
             this.db.open(db => {
-                let allBadges = db.objects('Badge').sorted('created_at',{ascending: true});
+                let allBadges = db.objects('Badge').filtered('barcode = $0',null).sorted('created_at',{ascending: true});
                 res.send({
                     badges: allBadges
                 });
@@ -101,6 +104,62 @@ class Router {
                 console.log(error);
                 res.sendStatus(500);
             });
+        }.bind(this));
+
+        //Import badges
+        this.app.post('/api/badges/import', function(req, res){
+            if(!req.files || req.files.length == 0 || typeof req.files['badges'] == 'undefined'){
+                return res.status(400).send('No badge file was uploaded.');
+            }
+            let badgesFile = req.files.badges;
+
+            csv({
+                //headers: ["barcode","host"],
+                delimiter: "auto"
+            })
+            .fromString(badgesFile.data.toString())
+            .then((badges)=>{ 
+                if(badges.length == 0){
+                    return res.status(400).send('No badges imported.');
+                }
+                this.db.open(db => {
+                    let created = 0;
+                    let updated = 0;
+                    for(let i = 0; i < badges.length; i++){
+                        console.log(badges[i]);
+                        //Check if badge already exists
+                        if(typeof badges[i].barcode == 'undefined' || typeof badges[0].host == 'undefined') break;
+                        let badge = db.objects('Badge').filtered("barcode = $0",badges[i].barcode)[0];
+                        
+                        if(!badge){
+                            created++;
+                            db.write(() => {
+                                db.create('Badge', {
+                                    badge_id: uuidv4(),
+                                    barcode: badges[i].barcode,
+                                    host: badges[i].host,
+                                    created_at: moment().toDate()
+                                });
+                            });
+                        } else {
+                            updated++;
+                            db.write(() => {
+                                badge.host = badges[i].host;
+                            });
+                        }
+                    };
+                    res.status(200).send({
+                        created: created,
+                        updated: updated
+                    });
+                }, error => {
+                    return res.status(500).send(error);
+                });
+            })
+            .catch(function (error) {
+                return res.status(500).send(error);
+            });
+
         }.bind(this));
 
         //Fetch scans
@@ -125,7 +184,7 @@ class Router {
                     db.create('Badge', {
                         badge_id: uuidv4(),
                         name: req.body.name,
-                        company: req.body.company,
+                        host: req.body.host,
                         created_at: moment().toDate()
                     });
                 });
@@ -590,8 +649,6 @@ class Router {
             });
             
         }.bind(this));
-
-        
 
         //Reset all tickets and scan information
         this.app.get('/api/reset', function(req, res){

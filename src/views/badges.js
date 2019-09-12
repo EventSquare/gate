@@ -10,7 +10,7 @@ class Badges extends React.Component {
             createBadge: false,
             errorName: false,
             name: "",
-            company: ""
+            host: ""
         }
         this.closeBadgeForm = this.closeBadgeForm.bind(this);
         this.openBadgeForm = this.openBadgeForm.bind(this);
@@ -62,12 +62,20 @@ class Badges extends React.Component {
         }
         axios.post('/api/badges',{
             name: this.state.name,
-            company: this.state.company
+            host: this.state.host
         })
         .then(function (response) {
             // handle success
             this.loadBadges();
-            this.printBadge({name: this.state.name, company: this.state.company});
+            this.printBadge({
+                ticket: {
+                    firstname: this.state.name,
+                    lastname: ""
+                },
+                order: {
+                    company: this.state.host
+                }
+            });
         }.bind(this))
         .catch(function (error) {
             // handle error
@@ -83,18 +91,15 @@ class Badges extends React.Component {
         const badgesList = this.state.badges.map((badge) =>
             <tr key={badge.badge_id}>
                 <td><b>{ badge.name }</b></td>
-                <td>{ badge.company }</td>
+                <td>{ badge.host }</td>
                 <td>{ moment(badge.created_at).format("YYYY-MM-DD HH:mm:ss") }</td>
-                <td><button onClick={() => this.printBadge({name: badge.name, company: badge.company})} className="btn btn-sm btn-primary">Print</button></td>
+                <td><button onClick={() => this.printBadge({ticket: {firstname: badge.name, lastname: ""}, order: { company: badge.host}})} className="btn btn-sm btn-primary">Print</button></td>
             </tr>
         );
         return badgesList;
     }
-    printBadge(badge){
-        this.props.emit('print_badge', {
-            name: badge.name,
-            company: badge.company
-        });
+    printBadge(ticketData){
+        this.props.emit('print_badge', ticketData);
     }
     render() {
         return (
@@ -148,7 +153,7 @@ class Badges extends React.Component {
                         </div>
                         <div className="form-group">
                             <label>Bedrijf</label>
-                            <input name="company" onChange={this.onChange} value={this.state.company} type="text" className="form-control" placeholder="Bedrijfsnaam" />
+                            <input name="host" onChange={this.onChange} value={this.state.host} type="text" className="form-control" placeholder="Bedrijfsnaam" />
                         </div>
                         <button onClick={this.saveBadge} type="submit" className="btn btn-block btn-primary">Bewaren en afdrukken</button>
                         <button onClick={this.closeBadgeForm} type="button" className="btn btn-block btn-link">Annuleren</button>
