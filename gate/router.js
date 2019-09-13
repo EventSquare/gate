@@ -126,7 +126,6 @@ class Router {
                     let created = 0;
                     let updated = 0;
                     for(let i = 0; i < badges.length; i++){
-                        console.log(badges[i]);
                         //Check if badge already exists
                         if(typeof badges[i].barcode == 'undefined' || typeof badges[0].host == 'undefined') break;
                         let badge = db.objects('Badge').filtered("barcode = $0",badges[i].barcode)[0];
