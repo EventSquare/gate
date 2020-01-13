@@ -1,6 +1,6 @@
 {
     "name": "eventsquare-gate",
-    "version": "3.0.5",
+    "version": "3.0.6",
     "description": "Event support access control server.",
     "main": "gate.js",
     "dependencies": {
@@ -23,6 +23,7 @@
         "qr-image": "*",
         "react-router-dom": "^4.3.1",
         "realm": "^2.15.3",
+        "remove-accents": "^0.4.2",
         "socket.io": "^2.1.1",
         "tmp": "0.0.33",
         "uuidv4": "^1.0.1",
