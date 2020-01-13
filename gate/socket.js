@@ -76,6 +76,7 @@ class Socket {
                 this.handleEventListener(payload.event,payload.data,device);
                 if(typeof callback !== 'undefined') callback();
             } catch (err) {
+                console.log(err);
                 log("Error decrypting incoming event on server, please verify encryption key.");
                 if(typeof callback !== 'undefined') callback(err);
             }
@@ -87,7 +88,7 @@ class Socket {
         switch(event){
             case 'scan':
                 // Ticket scan
-                if(payload.status == "OK"){
+                if(payload.ticketData.status == "allowed"){
                     this.printBadge(device,payload);
                 }
                 break;

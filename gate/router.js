@@ -579,7 +579,7 @@ class Router {
 
                 //Scan and update status
                 if(scans.length == 0){
-                    ticketData.status = "OK";
+                    ticketData.status = "allowed";
                     //Save scan
                     db.write(() => {
                         db.create('Scan', {
