@@ -104,11 +104,8 @@ class Printer {
                     u: ticket.uuid,
                     t: ticket.type.id
                 };
-
-                // encrypted...
-                // let encrypted_qr = Utils.encrypt(qrData,this.config.encryption_key);
+                
                 // base64 encoded
-
                 let encrypted_qr = Buffer.from(JSON.stringify(qrData)).toString('base64');
 
                 let ticketData = {
