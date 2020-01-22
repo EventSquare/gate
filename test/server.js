@@ -5,7 +5,7 @@ const EventSquare = require('../gate.js');
 //Start Gate Server
 const gate = new EventSquare.Gate({
     api_endpoint: process.env.API_ENDPOINT,
-    bonjour: false,
+    bonjour: true,
     scantoken: process.env.SCANTOKEN,
     encryption_key: process.env.ENCRYPTION_KEY,
     name: process.env.DEVICE_NAME,
