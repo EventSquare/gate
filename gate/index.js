@@ -20,8 +20,8 @@ class Gate {
             storage_path: null,
             timezone: "Europe/Brussels",
             eventName: "The Amazing Event",
-            eventDate: "a/nice/day",
-            eventLocation: "Heaven Cloud 5",
+            eventDate: "The 4th of July",
+            eventLocation: "Cloud 9",
             footerline: 'Powered by EventSquare',
         }
         //Clear events

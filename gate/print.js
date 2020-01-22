@@ -199,12 +199,19 @@ class Printer {
                     .text("  " + element.type.name)
                     .size(1, 1)
                     .style('N')
-                    .control('LF')
-                    .text("    Full Name: " + element.data.lastname + ", " + element.data.firstname)
-                    .text("     Birthday: " + element.data.birthday + " - " + element.data.birthplace)
-                    .text("  Nationality: " + element.data.nationality)
-                    .control('LF')
-                    .align('ct')
+                    .control('LF');
+
+                if(element.data.lastname){
+                    printer.text("    Full Name: " + element.data.lastname + ", " + element.data.firstname);
+                }
+                if(element.data.birthday){
+                    printer.text("     Birthday: " + element.data.birthday + " - " + element.data.birthplace)
+                }
+                if(element.data.nationality){
+                    printer.text("  Nationality: " + element.data.nationality);
+                }
+
+                printer.control('LF').align('ct');
 
                 printer.qrimage(element.qrdata, {
                     ec_level: 'M',
@@ -212,9 +219,9 @@ class Printer {
                     size: 5,
                     margin: 6
                 }, function (err) {
-                    if (err)
+                    if (err){
                         console.log("Error QR print: ", err);
-                }).then(() => {
+                    }
                     resolve();
                 });
             } else {
@@ -277,9 +284,8 @@ class Printer {
                 printer.feed(2);
                 printer.cut();
                 printer.close();
-                
                 console.log("Finished printing ("+printer.adapter.address+":"+printer.adapter.port+")!")
-            }catch(Exception){
+            } catch(Exception){
                 console.trace("Exception while finish printing ("+printer.adapter.address+":"+printer.adapter.port+"): ",Exception);
             }
             resolve();

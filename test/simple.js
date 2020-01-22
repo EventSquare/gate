@@ -7,46 +7,33 @@ const config = {
     port: process.env.PORT,
     bonjour: true,
     storage_path: path.join(__dirname + '/storage'),
-    scantoken: process.env.SCANTOKEN
+    scantoken: process.env.SCANTOKEN,
+    eventName: "The Hair Games",
+    eventDate: "26-27 JAN 2020",
+    eventLocation: "Brussels Kart Expo",
+    footerline: 'Powered by EventSquare',
 };
 
 //Start Gate Server
 const gate = new EventSquare.Gate(config);
 
 // Printing
-gate.on('print_order', (event) => {
-    console.log("Printing order for ", event.name, " - order data ", event.data);
-    
-    return;
-    // TODO REPLACE
-    printer = {
-        ip: '127.0.0.1',
+gate.on('print_order', (event, device) => {
+
+    let printer = {
+        ip: '192.168.1.81',
         port: 9100
     };
 
-    switch (event.name) {
-        case 'Kassa-1':
-        case 'Kassa-2':
-        case 'Kassa-3':
-        case 'Kassa-4':
-            printer.ip = '192.168.1.80';
-            break;
-        case 'BOXOFFICE-1':
-            break;
-        case 'BOXOFFICE-2':
-            break;
-        case 'BOXOFFICE-3':
-            break;
-        case 'BOXOFFICE-4':
-            break;
-        case 'EID-XXX':
-            printer.ip = '192.168.1.80';
+    switch (device.name) {
+        case 'BOX1':
+            printer.ip = '192.168.1.81';
             break;
         default:
-            // TODO...
             break;
     }
-    gate.printOrder(event.data, printer.ip, printer.port);
+
+    gate.socket.printer.printOrder(event, printer.ip, printer.port);
 });
 
 gate.start();
