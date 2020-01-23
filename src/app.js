@@ -45,7 +45,8 @@ class App extends React.Component {
     }
     initSocket(){
         this.esq = new Client({
-            name: this.state.user.username
+            name: this.state.user.username,
+            local: true
         });
         this.esq.on('connect', function () {
             console.log('Connected');
