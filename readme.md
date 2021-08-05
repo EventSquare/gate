@@ -6,6 +6,7 @@ Server and client for real-time communication at events between devices.
 
 ```js
 npm i eventsquare-gate
+yarn add eventsquare-gate
 ```
 
 ## Starting a server

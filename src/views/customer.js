@@ -13,6 +13,7 @@ class Customer extends React.Component {
         this.printTicket = this.printTicket.bind(this);
     };
     componentDidMount() {
+        moment.locale('nl');
         this.loadCustomer();
     }
     loadCustomer(){
@@ -123,28 +124,38 @@ class Customer extends React.Component {
             </div>
         )
     }
+    getRowClassName(ticket) {
+        if(ticket.blocked_at) return "table-danger";
+        if(ticket.scans.length) return "table-success";
+        return "";
+    }
     renderTicket(ticket){
         return (
-            <tr key={ticket.id} className={ticket.scans.length ? "table-success" : ""}>
+            <tr key={ticket.id} className={this.getRowClassName(ticket)}>
                 <td>
                     <h6 className="mb-0"><b>{ (ticket.firstname ? ticket.firstname : '') + ' ' + (ticket.lastname ? ticket.lastname : '') }</b></h6>
                     <p className="mb-0">{ ticket.type ? ticket.type.name : '-' }</p>
                     <p className="mb-0 small">{ ticket.barcode }</p>
                 </td>
                 <td>
-                    <h6 className="mb-0">{ ticket.show ? ticket.show.name : '' }</h6>
+                    { ticket.show && <h6 className="mb-0">{ticket.show.name ? ticket.show.name : moment(ticket.show.date_start).format("D MMMM YYYY - HH:mm")}</h6>}
                     <p className="mb-0 small">{ ticket.place ? ('Section: ' + ticket.place.data.section + ' - ' + 'Row: ' + ticket.place.data.row + ' - ' + 'Place: ' + ticket.place.data.seat) : '' }</p>
                 </td>
                 <td>{ ticket.scans.length ? moment(ticket.scans[0].scanned_at).format("DD-MM-YYYY HH:mm:ss") : '' }</td>
                 <td>
+                    {!ticket.blocked_at &&
                     <div className="dropdown show">
                         <a className="btn btn-sm btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Acties</a>
                         <div className="dropdown-menu" aria-labelledby="dropdownMenuLink">
                             <button onClick={() => this.scanTicket(ticket.barcode)} className="dropdown-item" href="#">Scan</button>
-                            <button onClick={() => this.printTicket(ticket)} className="dropdown-item" href="#">Afdrukken</button>
-                            {/* <button onClick={() => this.openBadge(ticket)} className="dropdown-item" href="#">Maak badge</button> */}
+                            <button onClick={() => this.openBadge(ticket)} className="dropdown-item" href="#">Maak badge</button>
+                            {/* <button onClick={() => this.printTicket(ticket)} className="dropdown-item" href="#">Afdrukken</button> */}
                         </div>
                     </div>
+                    }
+                    { ticket.blocked_at &&
+                        <small className="text-muted">Geblokkeerd op {moment(ticket.blocked_at).format("DD-MM-YYYY HH:mm")}</small>
+                    }
                 </td>
             </tr>
         );

@@ -10,6 +10,7 @@ class Shows extends React.Component {
         }
     };
     componentDidMount() {
+        moment.locale('nl');
         this.loadShows();
     }
     loadShows(){
@@ -34,9 +35,7 @@ class Shows extends React.Component {
     renderShow(show){
         return (
             <tr key={show.id} onClick={() => this.openShow(show.id)}>
-                <td>{show.name}</td>
-                <td>{show.date_start ? moment(show.date_start).format("YYYY-MM-DD HH:mm:ss") : ''}</td>
-                <td>{show.date_end ? moment(show.date_end).format("YYYY-MM-DD HH:mm:ss") : ''}</td>
+                <td>{show.name ? show.name : (show.date_start ? moment(show.date_start).format("dddd D MMMM YYYY - HH:mm") : '')}</td>
             </tr>
         );
     }
@@ -47,9 +46,7 @@ class Shows extends React.Component {
                     <table className="table table-striped table-bordered table-hover">
                         <thead className="thead-dark">
                             <tr>
-                                <th scope="col">Name</th>
-                                <th scope="col">Start</th>
-                                <th scope="col">End</th>
+                                <th scope="col">Voorstelling</th>
                             </tr>
                         </thead>
                         <tbody>

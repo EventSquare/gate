@@ -243,13 +243,13 @@ class Router {
                         user.username = req.body.username;
                     }
                     if(typeof req.body.badges !== 'undefined'){
-                        user.badges = req.body.badges
+                        user.badges = (req.body.badges === true || req.body.badges === 'true') ? true : false;
                     }
                     if(typeof req.body.reports !== 'undefined'){
-                        user.reports = req.body.reports
+                        user.reports = (req.body.reports === true || req.body.reports === 'true') ? true : false;
                     }
                     if(typeof req.body.settings !== 'undefined'){
-                        user.settings = req.body.settings
+                        user.settings = (req.body.settings === true || req.body.settings === 'true') ? true: false;
                     }
                     if(typeof req.body.ticket_printer !== 'undefined'){
                         if(req.body.ticket_printer){
@@ -361,7 +361,7 @@ class Router {
                     return;
                 }
                 //Get all tickets from show
-                let allTickets = db.objects('Ticket').filtered('show_id = $0',show.id);
+                let allTickets = db.objects('Ticket').filtered('show_id = $0 && blocked_at = null',show.id);
                 
                 let scans = {};
                 let types = [];
@@ -369,8 +369,7 @@ class Router {
                 if(allTickets.length){
                     //Count scans
                     for(var t = 0; t < allTickets.length; t++){
-                        let ticketScans = db.objects('Scan').filtered('ticket_id = "' + allTickets[t].id + '" DISTINCT(ticket_id)');
-                        //scans += ticketScans.length;
+                        let ticketScans = db.objects('Scan').filtered('ticket_id = "' + allTickets[t].ticket_id + '" DISTINCT(ticket_id)');
 
                         //Push type
                         if(!scans.hasOwnProperty(allTickets[t].type_id)){
@@ -540,20 +539,13 @@ class Router {
                     pocket: null,
                     order: null,
                     customer: null,
-                    status: 'already_scanned'
+                    status: 'allowed',
                 }
 
                 // Find type
                 let type = db.objectForPrimaryKey('Type', ticket.type_id);
                 if(type){
                     ticketData.type = type;
-                }
-
-                //Find scans
-                let scans = db.objects('Scan').filtered('ticket_id = "' + ticket.ticket_id + '"');
-
-                if(scans.length > 0){
-                    ticketData.scans = Array.from(scans);
                 }
 
                 // Find pocket
@@ -577,10 +569,20 @@ class Router {
                     }
                 }
 
-                //Scan and update status
-                if(scans.length == 0){
-                    ticketData.status = "allowed";
-                    //Save scan
+                //Find scans
+                let scans = db.objects('Scan').filtered('ticket_id = "' + ticket.ticket_id + '"');
+
+                if(scans.length > 0){
+                    ticketData.scans = Array.from(scans);
+                    ticketData.status = 'already_scanned';
+                }
+
+                if(ticket.blocked_at) {
+                    ticketData.status = 'blocked';
+                }
+                
+                // Save scan
+                if(scans.length === 0){
                     db.write(() => {
                         db.create('Scan', {
                             uuid: uuidv4(),
@@ -614,7 +616,7 @@ class Router {
                     customer = db.objectForPrimaryKey('Customer', pocket.customer_id);
                 }
 
-                let allTickets = db.objects('Ticket').filtered("pocket_id = '" + pocket.id + "'");
+                let allTickets = db.objects('Ticket').filtered("pocket_id = '" + pocket.id + "'").sorted('blocked_at');
                 let tickets = [];
 
                 //Parse tickets
@@ -630,13 +632,13 @@ class Router {
                             place: allTickets[i].place ? JSON.parse(allTickets[i].place) : null,
                             price: allTickets[i].price,
                             attendees: allTickets[i].attendees,
+                            blocked_at: allTickets[i].blocked_at,
                             type: allTickets[i].type_id ? db.objectForPrimaryKey('Type', allTickets[i].type_id) : null,
                             show: allTickets[i].show_id ? db.objectForPrimaryKey('Show', allTickets[i].show_id) : null,
                             scans: Array.from(allScans)
                         });
                     }
                 }
-
                 res.send({
                     pocket: pocket,
                     customer: customer,
@@ -654,6 +656,18 @@ class Router {
             //console.log('Resetting tickets, scans and last sync time');
             this.sync.reset();
             res.sendStatus(200);
+        }.bind(this));
+
+        // Get all system settings
+        this.app.get('/api/settings', function(req, res){
+            this.db.open(db => {
+                let settings = db.objects('Setting');
+                res.send({
+                    settings: Array.from(settings)
+                });
+            }, error => {
+                res.sendStatus(500);
+            });
         }.bind(this));
 
         //Update system setting

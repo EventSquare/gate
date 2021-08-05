@@ -32,9 +32,14 @@ class NavBar extends React.Component {
                             </li>
                             }
                             { this.props.user.reports &&
-                            <li className={"nav-item " + this.isActive('/reports')}>
-                                <Link className="nav-link" to="/reports">Rapporten</Link>
-                            </li>
+                                <li className={"nav-item " + this.isActive('/shows')}>
+                                    <Link className="nav-link" to="/shows">Voorstellingen</Link>
+                                </li>
+                            }
+                            { this.props.user.reports &&
+                                <li className={"nav-item " + this.isActive('/reports')}>
+                                    <Link className="nav-link" to="/reports">Rapporten</Link>
+                                </li>
                             }
                         </ul>
                         <ul className="navbar-nav">

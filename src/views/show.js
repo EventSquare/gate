@@ -12,6 +12,7 @@ class Show extends React.Component {
         this.loadInterval = null;
     };
     componentDidMount() {
+        moment.locale('nl');
         this.loadShow();
         this.loadInterval = setInterval(function(){
             this.loadShow();
@@ -21,7 +22,6 @@ class Show extends React.Component {
         clearInterval(this.loadInterval);
     }
     loadShow(){
-        console.log('loading show');
         axios.get('/api/shows/' + this.props.match.params.id)
         .then(function (response) {
             // handle success
@@ -52,13 +52,32 @@ class Show extends React.Component {
             </tr>
         );
     }
+    renderTableFooter() {
+        const totalTickets = this.state.types.reduce((a,b) => a+b.tickets,0);
+        const totalScans = this.state.types.reduce((a,b) => a+b.scans,0);
+        const percentageScanned = Math.round(totalScans / (totalTickets/100));
+        return (
+            <tfoot>
+                <tr>
+                    <th scope="col">
+                        Totaal
+                        <div className="progress" style={{height: "3px"}}>
+                            <div className="progress-bar" role="progressbar" style={{width: percentageScanned + '%'}}></div>
+                        </div>
+                    </th>
+                    <th scope="col">{totalScans}</th>
+                    <th scope="col">{totalTickets - totalScans}</th>
+                    <th scope="col">{totalTickets}</th>
+                </tr>
+            </tfoot>
+        )
+    }
     render() {
         return (
             <div className="page-padding">
                 <div className="container">
-                    <h1>{ this.state.show && this.state.show.name ? this.state.show.name : 'Loading...'}</h1>
-                    { this.state.show && this.state.show.date_start &&
-                    <h5>{ moment(this.state.show.date_start).format("YYYY-MM-DD HH:mm:ss")}</h5>
+                    { this.state.show &&
+                        <h4>{ this.state.show.name ? this.state.show.name : moment(this.state.show.date_start).format("dddd D MMMM YYYY - HH:mm")}</h4>
                     }
                     <hr/>
                     { this.state.show &&
@@ -67,13 +86,14 @@ class Show extends React.Component {
                             <tr>
                                 <th scope="col">Type</th>
                                 <th scope="col">Scans</th>
-                                <th scope="col">Remaining</th>
-                                <th scope="col">Total</th>
+                                <th scope="col">Resterend</th>
+                                <th scope="col">Totaal</th>
                             </tr>
                         </thead>
                         <tbody>
                             { this.state.types.map((type) => this.renderType(type)) }       
                         </tbody>
+                        { this.renderTableFooter()}
                     </table>
                     }
                 </div>

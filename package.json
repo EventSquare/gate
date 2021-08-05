@@ -1,8 +1,15 @@
 {
     "name": "eventsquare-gate",
-    "version": "3.0.9",
+    "version": "4.0.0",
     "description": "Event support access control server.",
     "main": "gate.js",
+    "scripts": {
+        "test": "node ./test/simple.js",
+        "kiosk": "node ./test/kiosk.js",
+        "zpl": "node ./test/zpl.js",
+        "watch": "webpack --watch --config webpack.dev.js",
+        "build": "webpack --config webpack.prod.js"
+    },
     "dependencies": {
         "axios": "^0.19.0",
         "body-parser": "^1.18.3",
@@ -61,13 +68,6 @@
     "repository": {
         "type": "git",
         "url": "https://github.com/eventsquare/gate.git"
-    },
-    "scripts": {
-        "test": "node ./test/test.js",
-        "kiosk": "node ./test/kiosk.js",
-        "zpl": "node ./test/zpl.js",
-        "watch": "webpack --watch --config webpack.dev.js",
-        "build": "webpack --config webpack.prod.js"
     },
     "engines": {
         "node": ">=8.x"

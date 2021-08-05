@@ -5,7 +5,7 @@ const EventSquare = require('../gate.js');
 const config = {
     api_endpoint: process.env.API_ENDPOINT,
     port: process.env.PORT,
-    bonjour: true,
+    bonjour: false,
     storage_path: path.join(__dirname + '/storage'),
     scantoken: process.env.SCANTOKEN,
     eventName: "The Hair Games",

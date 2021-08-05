@@ -56,6 +56,7 @@ class Sync {
     }
     auth() {
         if(this.authenticating) return;
+        console.log('Starting authentication');
         //Check macAddress
         if(!this.macAddress){
             console.warn('Macaddress is not available.');
@@ -82,6 +83,7 @@ class Sync {
             }
         })
         .then(function (response) {
+            console.log(`Authenticated as ${response.data.device.device_id}`);
             this.authenticating = false;
             this.device_id = response.data.device.device_id;
             this.sync();
@@ -227,11 +229,8 @@ class Sync {
         });
     }
     processTickets(tickets) {
-
         this.db.open(db => {
-
             let scans = [];
-
             db.write(() => {
                 //Sync tickets
                 for(var i=0;i<tickets.length;i++){
@@ -248,7 +247,8 @@ class Sync {
                         type_id: tickets[i].relations.type,
                         show_id: tickets[i].relations.show,
                         pocket_id: tickets[i].relations.pocket,
-                        reserved: tickets[i].ticket_id ? false : true
+                        reserved: tickets[i].ticket_id ? false : true,
+                        blocked_at: tickets[i].blocked_at ? new Date(tickets[i].blocked_at.replace(/-/g,"/")) : null,
                     }, true);
                     if(tickets[i].scans.length){
                         for(var s=0;s<tickets[i].scans.length;s++){
@@ -369,7 +369,7 @@ class Sync {
                 let allBadges = db.objects('Badge');
                 db.delete(allBadges);
             })
-            console.log('Reset all data');
+            console.log('All data was reset');
         }, error => {
             console.warn(error);
         });

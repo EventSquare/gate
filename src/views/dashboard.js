@@ -255,35 +255,51 @@ class DashBoard extends React.Component {
         }
     }
     renderStatus(status){
-        if(status == "already_scanned"){
-            return (
-                <div>
-                    <div className="mb-4 text-center">
-                        { this.state.ticket.ticket.firstname &&
-                        <h3 style={{fontSize: 48}} className="display-4 mb-1"><b>{ this.state.ticket.ticket.firstname + " " + this.state.ticket.ticket.lastname }</b></h3>
-                        }
-                        <h4><b>{ this.state.ticket.type.name }</b></h4>
+        switch(status){
+            case 'already_scanned':
+                return (
+                    <div>
+                        <div className="mb-4 text-center">
+                            { this.state.ticket.ticket.firstname &&
+                            <h3 style={{fontSize: 48}} className="display-4 mb-1"><b>{ this.state.ticket.ticket.firstname + " " + this.state.ticket.ticket.lastname }</b></h3>
+                            }
+                            <h4><b>{ this.state.ticket.type.name }</b></h4>
+                        </div>
+                        <div className="p-3 mb-5 bg-danger text-white text-center rounded">
+                            <h1>REEDS GESCAND</h1>
+                            <p className="lead mb-0">Dit ticket werd reeds gescand op { moment(this.state.ticket.scans[0].scanned_at).format("YYYY-MM-DD HH:mm:ss") }</p>
+                        </div>
                     </div>
-                    <div className="p-3 mb-5 bg-danger text-white text-center rounded">
-                        <h1>REEDS GESCAND</h1>
-                        <p className="lead mb-0">Dit ticket werd reeds gescand op { moment(this.state.ticket.scans[0].scanned_at).format("YYYY-MM-DD HH:mm:ss") }</p>
+                )
+            case 'blocked':
+                return (
+                    <div>
+                        <div className="mb-4 text-center">
+                            { this.state.ticket.ticket.firstname &&
+                            <h3 style={{fontSize: 48}} className="display-4 mb-1"><b>{ this.state.ticket.ticket.firstname + " " + this.state.ticket.ticket.lastname }</b></h3>
+                            }
+                            <h4><b>{ this.state.ticket.type.name }</b></h4>
+                        </div>
+                        <div className="p-3 mb-5 bg-danger text-white text-center rounded">
+                            <h1>GEBLOKKEERD</h1>
+                            <p className="lead mb-0">Dit ticket werd geblokkeerd op { moment(this.state.ticket.blocked_at).format("YYYY-MM-DD HH:mm:ss") }</p>
+                        </div>
                     </div>
-                </div>
-            )
-        } else {
-            return (
-                <div>
-                    <div className="mb-4 text-center">
-                        { this.state.ticket.ticket.firstname &&
-                        <h3 style={{fontSize: 48}} className="display-4 mb-1"><b>{ this.state.ticket.ticket.firstname + " " + this.state.ticket.ticket.lastname }</b></h3>
-                        }
-                        <h4><b>{ this.state.ticket.type.name }</b></h4>
+                )
+            case 'allowed':
+                return (
+                    <div>
+                        <div className="mb-4 text-center">
+                            { this.state.ticket.ticket.firstname &&
+                            <h3 style={{fontSize: 48}} className="display-4 mb-1"><b>{ this.state.ticket.ticket.firstname + " " + this.state.ticket.ticket.lastname }</b></h3>
+                            }
+                            <h4><b>{ this.state.ticket.type.name }</b></h4>
+                        </div>
+                        <div className="p-3 mb-5 bg-success text-white text-center rounded">
+                            <h1 className="mb-0">OK</h1>
+                        </div>
                     </div>
-                    <div className="p-3 mb-5 bg-success text-white text-center rounded">
-                        <h1 className="mb-0">OK</h1>
-                    </div>
-                </div>
-            )
+                )
         }
     }
     render() {
