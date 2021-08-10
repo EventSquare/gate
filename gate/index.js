@@ -51,8 +51,8 @@ class Gate {
             valid = false;
         }
         //Default settings
-        this.db.initSetting('name','EventSquare Gate');
-        this.db.initSetting('event','The Greatest Event');
+        this.db.initSetting('name',this.config.name);
+        this.db.initSetting('event',this.config.eventName);
         this.db.initSetting('sync',false);
         this.db.initSetting('last_sync',"2017-01-01 00:00:00");
     

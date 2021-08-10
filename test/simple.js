@@ -8,10 +8,10 @@ const config = {
     bonjour: false,
     storage_path: path.join(__dirname + '/storage'),
     scantoken: process.env.SCANTOKEN,
-    eventName: "The Hair Games",
-    eventDate: "26-27 JAN 2020",
-    eventLocation: "Brussels Kart Expo",
-    footerline: 'Powered by EventSquare',
+    eventName: process.env.EVENT_NAME,
+    eventDate: process.env.EVENT_DATE,
+    eventLocation: process.env.EVENT_LOCATION,
+    footerline: process.env.TICKET_FOOTER
 };
 
 //Start Gate Server
