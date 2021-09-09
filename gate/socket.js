@@ -88,7 +88,7 @@ class Socket {
         switch(event){
             case 'scan':
                 // Ticket scan
-                if(payload.ticketData.status == "allowed"){
+                if(payload.status !== "blocked") {
                     this.printBadge(device,payload);
                 }
                 break;
@@ -115,8 +115,7 @@ class Socket {
             let user = db.objects('User').filtered("username = $0",device.name)[0];
             if(user && user.badge_printer){
                 const labelprinter = new LabelPrinter(this.config);
-                //Fixed label path and name
-                const label = this.config.storage_path + '/label.zpl';
+                const label = this.config.storage_path + '/badge.zpl';
                 labelprinter.printLabel(user.badge_printer,label,payload);
             }
         }, error => {

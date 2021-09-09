@@ -16,23 +16,23 @@ gate.start();
 
 gate.on('scan', (event,device) => {
 
-    if(!event.ticketData.ticket) return;
-    if(event.ticketData.status !== "allowed") return;
+    if(!event.ticket) return;
+    //if(event.status !== "allowed") return;
 
     // Find pocket
     gate.db.open(db => {
-        if(event.ticketData.order) {
-            let order = db.objectForPrimaryKey('Order', event.ticketData.order.id);
+        if(event.order) {
+            let order = db.objectForPrimaryKey('Order', event.order.id);
             if(order && (order.company || order.invitation_reference)){
                 if(order.invitation_reference){
-                    event.ticketData.order.company = order.invitation_reference;
+                    event.order.company = order.invitation_reference;
                 }
                 if(order.company){
-                    event.ticketData.order.company = order.company;
+                    event.order.company = order.company;
                 }
             }
         }
-        processLabel(device,event.ticketData)
+        processLabel(device,event)
     }, error => {
         console.warn(error);
     });

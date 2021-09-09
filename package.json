@@ -1,11 +1,12 @@
 {
     "name": "eventsquare-gate",
-    "version": "4.0.0",
+    "version": "4.0.1",
     "description": "Event support access control server.",
     "main": "gate.js",
     "scripts": {
         "test": "node ./test/simple.js",
         "kiosk": "node ./test/kiosk.js",
+        "server": "node ./test/server.js",
         "zpl": "node ./test/zpl.js",
         "watch": "webpack --watch --config webpack.dev.js",
         "build": "webpack --config webpack.prod.js"

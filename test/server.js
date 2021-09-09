@@ -17,21 +17,20 @@ const gate = new EventSquare.Gate({
 gate.start();
 
 //Load logo data from csv file
-const csv = require('csvtojson')
-let logos = {};
+// const csv = require('csvtojson')
+// let logos = {};
 
-csv({
-    trim: true,
-})
-.fromFile(path.join(__dirname ,'../storage/brand_logos.csv'))
-.then((logoData)=>{
-    for(var i = 0; i < logoData.length; i++){
-        logos[logoData[i].order_reference] = logoData[i].logo;
-    }
-})
+// csv({
+//     trim: true,
+// })
+// .fromFile(path.join(__dirname ,'../storage/brand_logos.csv'))
+// .then((logoData)=>{
+//     for(var i = 0; i < logoData.length; i++){
+//         logos[logoData[i].order_reference] = logoData[i].logo;
+//     }
+// })
 
 gate.on('scan', (event) => {
-    
     if(!event.data.ticketData.ticket) return;
 
     //Default label data

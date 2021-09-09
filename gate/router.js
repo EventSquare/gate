@@ -114,12 +114,12 @@ class Router {
             let badgesFile = req.files.badges;
 
             csv({
-                //headers: ["barcode","host"],
+                //headers: ["barcode","host","table"],
                 delimiter: "auto"
             })
             .fromString(badgesFile.data.toString())
             .then((badges)=>{ 
-                if(badges.length == 0){
+                if(badges.length === 0){
                     return res.status(400).send('No badges imported.');
                 }
                 this.db.open(db => {
@@ -127,8 +127,8 @@ class Router {
                     let updated = 0;
                     for(let i = 0; i < badges.length; i++){
                         //Check if badge already exists
-                        if(typeof badges[i].barcode == 'undefined' || typeof badges[0].host == 'undefined') break;
-                        let badge = db.objects('Badge').filtered("barcode = $0",badges[i].barcode)[0];
+                        if(typeof badges[i].barcode === 'undefined' || typeof badges[0].host === 'undefined') break;
+                        let badge = db.objects('Badge').filtered("barcode = $0", badges[i].barcode)[0];
                         
                         if(!badge){
                             created++;
@@ -136,7 +136,8 @@ class Router {
                                 db.create('Badge', {
                                     badge_id: uuidv4(),
                                     barcode: badges[i].barcode,
-                                    host: badges[i].host,
+                                    host: badges[i].host ? badges[i].host : null,
+                                    table: badges[i].table ? badges[i].table : null,
                                     created_at: moment().toDate()
                                 });
                             });
@@ -144,6 +145,7 @@ class Router {
                             updated++;
                             db.write(() => {
                                 badge.host = badges[i].host;
+                                badge.table = badges[i].table;
                             });
                         }
                     };
@@ -175,19 +177,18 @@ class Router {
             });
         }.bind(this));
 
-        //Post badges
+        //Create badge
         this.app.post('/api/badges', function(req, res){
             this.db.open(db => {
-                //Save scan
                 db.write(() => {
                     db.create('Badge', {
                         badge_id: uuidv4(),
                         name: req.body.name,
                         host: req.body.host,
+                        table: req.body.table,
                         created_at: moment().toDate()
                     });
                 });
-                //Add scan
                 res.sendStatus(200);
             }, error => {
                 console.warn(error);

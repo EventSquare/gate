@@ -12,6 +12,7 @@ class Order extends React.Component {
             pocketData: [],
             badge: false,
             name: "",
+            table: "",
             company: "",
         }
         this.openBadge = this.openBadge.bind(this);
@@ -78,7 +79,8 @@ class Order extends React.Component {
         this.setState({
             badge: true,
             name: ticket.firstname.trim() + " " + ticket.lastname.trim(),
-            company: company
+            company: company,
+            table: "",
         });
     }
     closeBadge(){ 
@@ -230,7 +232,7 @@ class Order extends React.Component {
         return (
             <div className="page-padding">
                 { this.renderOrder() }
-                <Badge onEmit={this.props.emit} onChange={(name,value) => this.onChange(name,value)} onClose={() =>this.closeBadge() } visible={this.state.badge} name={this.state.name} company={this.state.company} />
+                <Badge onEmit={this.props.emit} onChange={(name,value) => this.onChange(name,value)} onClose={() =>this.closeBadge() } visible={this.state.badge} name={this.state.name} company={this.state.company} table={this.state.table} />
             </div>
         )
     }

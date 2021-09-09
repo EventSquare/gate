@@ -23,6 +23,7 @@ class Badge extends React.Component {
             order: {
                 company: this.props.company
             },
+            table: this.props.table,
             ignoreBadges: true
         });
         this.props.onClose();
@@ -44,6 +45,10 @@ class Badge extends React.Component {
                         <div className="form-group">
                             <label>Bedrijf</label>
                             <input name="company" onChange={this.onChange} value={this.props.company} type="text" className="form-control" placeholder="Bedrijfsnaam" />
+                        </div>
+                        <div className="form-group">
+                            <label>Tafel</label>
+                            <input name="table" onChange={this.onChange} value={this.props.table} type="text" className="form-control" placeholder="Tafelnummer" />
                         </div>
                         <button onClick={this.printBadge} type="submit" className="btn btn-block btn-primary">Afdrukken</button>
                         <button onClick={this.props.onClose} type="button" className="btn btn-block btn-link">Annuleren</button>

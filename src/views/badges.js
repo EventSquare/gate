@@ -10,7 +10,8 @@ class Badges extends React.Component {
             createBadge: false,
             errorName: false,
             name: "",
-            host: ""
+            host: "",
+            table: "",
         }
         this.closeBadgeForm = this.closeBadgeForm.bind(this);
         this.openBadgeForm = this.openBadgeForm.bind(this);
@@ -62,7 +63,8 @@ class Badges extends React.Component {
         }
         axios.post('/api/badges',{
             name: this.state.name,
-            host: this.state.host
+            host: this.state.host,
+            table: this.state.table,
         })
         .then(function (response) {
             // handle success
@@ -74,7 +76,8 @@ class Badges extends React.Component {
                 },
                 order: {
                     company: this.state.host
-                }
+                },
+                table: this.state.table
             });
         }.bind(this))
         .catch(function (error) {
@@ -92,8 +95,9 @@ class Badges extends React.Component {
             <tr key={badge.badge_id}>
                 <td><b>{ badge.name }</b></td>
                 <td>{ badge.host }</td>
+                <td>{ badge.table }</td>
                 <td>{ moment(badge.created_at).format("YYYY-MM-DD HH:mm:ss") }</td>
-                <td><button onClick={() => this.printBadge({ticket: {firstname: badge.name, lastname: ""}, order: { company: badge.host}})} className="btn btn-sm btn-primary">Print</button></td>
+                <td><button onClick={() => this.printBadge({ticket: {firstname: badge.name, lastname: ""}, order: { company: badge.host}, table: badge.table})} className="btn btn-sm btn-primary">Print</button></td>
             </tr>
         );
         return badgesList;
@@ -123,6 +127,7 @@ class Badges extends React.Component {
                             <tr>
                                 <th scope="col">Naam</th>
                                 <th scope="col">Bedrijfsnaam</th>
+                                <th scope="col">Tafel</th>
                                 <th scope="col">Aangemaakt</th>
                                 <th scope="col"></th>
                             </tr>
@@ -154,6 +159,10 @@ class Badges extends React.Component {
                         <div className="form-group">
                             <label>Bedrijf</label>
                             <input name="host" onChange={this.onChange} value={this.state.host} type="text" className="form-control" placeholder="Bedrijfsnaam" />
+                        </div>
+                        <div className="form-group">
+                            <label>Tafel</label>
+                            <input name="table" onChange={this.onChange} value={this.state.table} type="text" className="form-control" placeholder="Tafelnummer" />
                         </div>
                         <button onClick={this.saveBadge} type="submit" className="btn btn-block btn-primary">Bewaren en afdrukken</button>
                         <button onClick={this.closeBadgeForm} type="button" className="btn btn-block btn-link">Annuleren</button>
