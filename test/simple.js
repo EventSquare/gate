@@ -25,13 +25,16 @@ const gate = new EventSquare.Gate(config);
 //         port: 9100
 //     };
 
-//     switch (device.name) {
-//         case 'BOX1':
-//             printer.ip = '192.168.1.80';
-//             break;
-//         default:
-//             break;
-//     }
+switch (device.name) {
+    case 'ASTRID-1':
+        printer.ip = '192.168.1.100';
+        break;
+    case 'ASTRID-2':
+        printer.ip = '192.168.1.81';
+        break;
+    default:
+        break;
+}
 
 //     gate.socket.printer.printOrder(event, printer.ip, printer.port);
 // });
