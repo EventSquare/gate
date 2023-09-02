@@ -17,26 +17,4 @@ const config = {
 //Start Gate Server
 const gate = new EventSquare.Gate(config);
 
-// // Printing
-// gate.on('print_order', (event, device) => {
-
-//     let printer = {
-//         ip: '192.168.1.80',
-//         port: 9100
-//     };
-
-switch (device.name) {
-    case 'ASTRID-1':
-        printer.ip = '192.168.1.100';
-        break;
-    case 'ASTRID-2':
-        printer.ip = '192.168.1.81';
-        break;
-    default:
-        break;
-}
-
-//     gate.socket.printer.printOrder(event, printer.ip, printer.port);
-// });
-
 gate.start();
