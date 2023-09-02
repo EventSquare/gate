@@ -5,7 +5,6 @@ class Client {
     constructor(newConfig){
         //Initialize Config
         this.config = {
-            encryption_key: null,
             host: null,
             name: null,
             device: 'unknown',
