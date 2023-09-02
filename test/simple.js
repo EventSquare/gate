@@ -3,6 +3,7 @@ const path = require('path');
 const EventSquare = require('../gate.js');
 
 const config = {
+    name: process.env.DEVICE_NAME,
     api_endpoint: process.env.API_ENDPOINT,
     port: process.env.PORT,
     bonjour: true,
