@@ -8,6 +8,7 @@
         "kiosk": "node ./test/kiosk.js",
         "server": "node ./test/server.js",
         "simple": "node ./test/simple.js",
+        "client": "node ./test/client.js",
         "zpl": "node ./test/zpl.js",
         "watch": "webpack --watch --config webpack.dev.js",
         "build": "webpack --config webpack.prod.js"

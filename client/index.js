@@ -114,21 +114,6 @@ class Client {
             this.events[event](payload);
         }
     }
-    static discover(timeout = 2500,callback){
-        //Initialize Bonjour listener
-        let bonjourBrowser = bonjour();
-        let gates = [];
-        let browser = bonjourBrowser.find({
-            type: 'EventSquare'
-        },function(service){
-            let gate = formatService(service);
-            if(gate) gates.push(gate);
-        });
-        let time = setTimeout(function(){
-            callback(gates);
-            browser.stop();
-        }.bind(this),timeout)
-    }
 }
 
 module.exports = Client;

@@ -18,4 +18,10 @@ const config = {
 //Start Gate Server
 const gate = new EventSquare.Gate(config);
 
+//Listen for incoming EID reads
+gate.on('eid_read',event => {
+    //event object contains source, event and data.
+    console.log(event);
+});
+
 gate.start();
