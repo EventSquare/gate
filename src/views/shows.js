@@ -59,4 +59,4 @@ class Shows extends React.Component {
     }
 };
 
-module.exports = Shows;
+export default Shows;

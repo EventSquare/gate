@@ -209,4 +209,4 @@ class Customer extends React.Component {
     }
 };
 
-module.exports = Customer;
+export default Customer;

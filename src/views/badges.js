@@ -173,4 +173,4 @@ class Badges extends React.Component {
     }
 };
 
-module.exports = Badges;
+export default Badges;

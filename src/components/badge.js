@@ -59,4 +59,4 @@ class Badge extends React.Component {
     }
 };
 
-module.exports = Badge;
+export default Badge;

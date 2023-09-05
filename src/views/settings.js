@@ -113,4 +113,4 @@ class Settings extends React.Component {
     }
 };
 
-module.exports = Settings;
+export default Settings;

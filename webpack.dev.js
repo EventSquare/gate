@@ -7,13 +7,22 @@ module.exports = {
         filename: 'app.js',
         path: path.resolve(__dirname, 'dist')
     },
+    resolve: {
+        fallback: { "os": false }
+    },
     module: {
         rules: [
             {
                 test: /\.js$/,
                 exclude: /node_modules/,
                 use: {
-                  loader: "babel-loader"
+                  loader: "babel-loader",
+                  options: {
+                    presets: [
+                      ['@babel/preset-env', { targets: "defaults" }],
+                      "@babel/preset-react"
+                    ]
+                  }
                 }
             },
             {

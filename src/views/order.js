@@ -238,4 +238,4 @@ class Order extends React.Component {
     }
 };
 
-module.exports = Order;
+export default Order;

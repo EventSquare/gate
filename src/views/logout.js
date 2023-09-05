@@ -20,4 +20,4 @@ class Logout extends React.Component {
     }
 };
 
-module.exports = Logout;
+export default Logout;

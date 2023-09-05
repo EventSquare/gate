@@ -102,4 +102,4 @@ class Show extends React.Component {
     }
 };
 
-module.exports = Show;
+export default Show;

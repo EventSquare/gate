@@ -14,19 +14,16 @@ const axios = require('axios');
 const NavBar = require('./components/navbar')
 
 //Pages
-const Login = require('./views/login');
-const Logout = require('./views/logout');
-const Dashboard = require('./views/dashboard');
-const Order = require('./views/order');
-const Customer = require('./views/customer');
-const Badges = require('./views/badges');
-
-const Shows = require('./views/shows');
-const Show = require('./views/show');
-
-const Reports = require('./views/reports');
-const Settings = require('./views/settings');
-
+import Login from './views/login';
+import Logout from './views/logout';
+import Dashboard from './views/dashboard';
+import Order from './views/order';
+import Customer from './views/customer';
+import Badges from './views/badges';
+import Shows from './views/shows';
+import Show from './views/show';
+import Reports from './views/reports';
+import Settings from './views/settings';
 class App extends React.Component {
     constructor(props) {
         super(props);
