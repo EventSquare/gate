@@ -24,9 +24,15 @@ gate.on('print_order', (event, device) => {
 });
 
 //Listen for incoming EID reads
-gate.on('eid_read',event => {
+gate.on('eid_read', eidData => {
     //event object contains source, event and data.
-    console.log(event);
+    console.log('EID Read event received');
+    //Forward event to BOXOFFICE-1
+    gate.forward(['BOX1'], {
+        event: 'eid_read',
+        data: eidData
+    });
 });
+
 
 gate.start();
