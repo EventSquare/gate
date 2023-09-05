@@ -8,7 +8,9 @@ const moment = require('moment-timezone');
 class Socket {
     constructor(server,config,handleEventListener){
         
-        this.socket = io(server);
+        this.socket = io(server,{
+            allowEIO3: true // Allow connection from socket.io v2 / v3
+        });
         this.config = config;
         this.handleEventListener = handleEventListener;
 

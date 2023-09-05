@@ -18,6 +18,10 @@ const config = {
 //Start Gate Server
 const gate = new EventSquare.Gate(config);
 
+gate.on('print_order', (event, device) => {
+    gate.socket.printer.printOrder(event, process.env.PRINTER_IP, 9100);
+});
+
 //Listen for incoming EID reads
 gate.on('eid_read',event => {
     //event object contains source, event and data.
