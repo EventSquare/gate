@@ -11,7 +11,7 @@ const cookies = new Cookies();
 const axios = require('axios');
 
 //Components
-const NavBar = require('./components/navbar')
+import  NavBar from './components/navbar';
 
 //Pages
 import Login from './views/login';

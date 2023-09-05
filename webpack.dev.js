@@ -8,7 +8,7 @@ module.exports = {
         path: path.resolve(__dirname, 'dist')
     },
     resolve: {
-        fallback: { "os": false }
+        fallback: { "os": require.resolve("os-browserify/browser") }
     },
     module: {
         rules: [
