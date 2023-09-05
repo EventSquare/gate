@@ -19,6 +19,7 @@ const config = {
 const gate = new EventSquare.Gate(config);
 
 gate.on('print_order', (event, device) => {
+    console.log('Print Order event received', event);
     gate.socket.printer.printOrder(event, process.env.PRINTER_IP, 9100);
 });
 
