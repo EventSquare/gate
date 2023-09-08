@@ -1,7 +1,8 @@
 import React from "react";
 const axios = require('axios');
-const Badge = require('../components/badge')
 var moment = require('moment-timezone');
+
+import Badge from '../components/badge';
 
 class Order extends React.Component {
     constructor(props) {

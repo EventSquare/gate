@@ -55,7 +55,7 @@ class Router {
 
                 for(let i = 0; i < allTypes.length; i++){
                     let allTickets = db.objects('Ticket').filtered('type_id = $0',allTypes[i].id);
-                    let allScans = db.objects('Scan').filtered('type_id = $0 DISTINCT(uuid) AND scanned_at >= $1 AND scanned_at < $2',allTypes[i].id,startDate.toDate(),endDate.toDate());
+                    let allScans = db.objects('Scan').filtered('type_id = $0 AND scanned_at >= $1 AND scanned_at < $2 DISTINCT(uuid)',allTypes[i].id,startDate.toDate(),endDate.toDate());
                     types.push({
                         id: allTypes[i].id,
                         name: allTypes[i].name,

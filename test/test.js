@@ -16,56 +16,75 @@ const gate = new EventSquare.Gate({
 gate.start();
 
 //Listen for incoming EID reads from EID-1 and forward to BOXOFFICE-1
-gate.on('eid_read', (event) => {
-    console.log("GOT EID !!", event.data);
-    switch (event.name) {
-        case 'EID-Reader-1':
-        case 'EID-Reader-2':
-        case 'EID-Reader-3':
-        case 'EID-Reader-4':
-        case 'EID-Reader-5':
-        case 'EID-XXX':
-            //gate.forward(['BOXOFFICE-1'], event);
-            console.log("Forwarding...");
-            gate.forward(['Kassa-1'], event);
-            break;
-        default:
-            break;
+gate.on('eid_read', (data, device) => {
+    console.log('eid_read received from ' + device.name);
+    let boxName;
+    switch (device.name) {
+      case "EID-Reader-1":
+        boxName = "BOX-1";
+        break;
+      case "EID-Reader-2":
+        boxName = "BOX-2";
+        break;
+      case "EID-Reader-3":
+        boxName = "BOX-3";
+        break;
+      case "EID-Reader-4":
+        boxName = "BOX-4";
+        break;
+      default:
+        break;
+    }
+
+    if(boxName){
+        gate.forward([boxName], {
+            event: 'eid_read',
+            data
+         });
     }
 });
 
-// Printing
-gate.on('print_order', (event) => {
-    console.log("Printing order for ", event.name, " - order data ", event.data);
-    // TODO REPLACE
-    printer = {
-        ip: '127.0.0.1',
-        port: 9100
-    };
+//Listen for incoming EID reads from EID-1 and forward to BOXOFFICE-1
+gate.on('eid_read', (data, device) => {
+    console.log('eid_read received from ' + device.name);
+    let boxName;
+    switch (device.name) {
+      case "EID-Reader-5":
+        boxName = "BOX-5";
+        break;
+      case "EID-Reader-6":
+        boxName = "BOX-6";
+        break;
+      default:
+        break;
+    }
 
-    switch (event.name) {
-        case 'Kassa-1':
-        case 'Kassa-2':
-        case 'Kassa-3':
-        case 'Kassa-4':
-            printer.ip = '192.168.1.80';
+    if(boxName){
+        gate.forward([boxName], {
+            event: 'eid_read',
+            data
+         });
+    }
+});
+
+
+// Printing
+gate.on('print_order', (event, device) => {
+    console.log("Printing order for " + device.name);
+    let printer;
+
+    switch (device.name) {
+        case 'BOX-1':
+        case 'BOX-2':
+            printer = "192.168.1.80";
             break;
-        case 'BOXOFFICE-1':
-            break;
-        case 'BOXOFFICE-2':
-            break;
-        case 'BOXOFFICE-3':
-            break;
-        case 'BOXOFFICE-4':
-            break;
-        case 'EID-XXX':
-            printer.ip = '192.168.1.80';
-            break;
+        case 'BOX-3':
+        case 'BOX-4':
         default:
-            // TODO...
+            printer = "192.168.1.81";
             break;
     }
-    gate.printOrder(event.data, printer.ip, printer.port);
+    gate.socket.printer.printOrder(event, printer, 9100);
 });
 
 //Discover gates
